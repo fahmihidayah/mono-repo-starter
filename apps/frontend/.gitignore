@@ -1,0 +1,12 @@
+# Frontend-specific ignores
+# Most patterns are handled by root .gitignore
+# Only add frontend-specific exceptions here
+
+# React Router specific
+.react-router/
+
+# Frontend build output
+build/
+
+# Type generation
+.react-router/types/

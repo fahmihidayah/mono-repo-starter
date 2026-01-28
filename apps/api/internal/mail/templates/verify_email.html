@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Email</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            padding: 30px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #2196F3;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Verify Your Email Address</h1>
+        </div>
+
+        <p>Hi {{.Name}},</p>
+
+        <p>Thank you for registering with Blog API! To complete your registration and activate your account, please verify your email address.</p>
+
+        <p>Your email: <strong>{{.Email}}</strong></p>
+
+        <p>Click the button below to verify your email address:</p>
+
+        <a href="{{.VerifyLink}}" class="button">Verify Email</a>
+
+        <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
+        <p style="word-break: break-all; color: #2196F3;">{{.VerifyLink}}</p>
+
+        <p>This verification link will expire in 24 hours for security reasons.</p>
+
+        <p>If you didn't create an account with us, please ignore this email.</p>
+
+        <div class="footer">
+            <p>This is an automated email, please do not reply.</p>
+            <p>&copy; 2026 Blog API. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,185 @@
+import { Link, Form, redirect, useActionData, useNavigation, useSubmit } from "react-router";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
+import { PasswordInput } from "~/components/ui/password-input";
+import { serverLogin } from "~/lib/auth-client";
+import type { Route } from "./+types/route";
+import { useForm } from "react-hook-form";
+import { loginFormSchema, type LoginFormData } from "./types";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form as FormComponent,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '~/components/ui/form';
+import { Lock, Mail } from "lucide-react";
+
+// Meta function for SEO
+export function meta() {
+  return [
+    { title: "Login - Starter App" },
+    { name: "description", content: "Sign in to your account" },
+  ];
+}
+
+// Define the action data type
+type ActionData = {
+  success: false;
+  errors: {
+    email?: string;
+    password?: string;
+    general?: string;
+  };
+};
+
+// Server action for login
+export async function action({ request }: Route.ActionArgs) {
+  const formData = await request.formData();
+  const data = Object.fromEntries(formData);
+
+  // Server-side validation
+  const errors: { email?: string; password?: string; general?: string } = {};
+  const resultValidation = loginFormSchema.safeParse(data);
+
+  if (!resultValidation.success) {
+    return {
+      success: false,
+      errors: {
+        ...resultValidation.error.flatten().fieldErrors,
+        general: "Please correct the errors below and try again."
+      } as ActionData["errors"]
+    };
+  }
+  // Login using centralized auth client
+  const result = await serverLogin(resultValidation.data);
+
+  if (!result.success) {
+    return {
+      success: false,
+      errors: {
+        general: result.error || "Invalid email or password. Please try again.",
+      },
+    } as ActionData;
+  }
+
+  // Redirect to dashboard with cookie headers
+  return redirect("/dashboard", { headers: result.headers });
+}
+
+// Login component
+export default function Login() {
+  const actionData = useActionData<typeof action>();
+  const navigation = useNavigation();
+  const submit = useSubmit();
+  const isSubmitting = navigation.state === "submitting";
+
+  // Initialize React Hook Form with Zod validation
+  const form = useForm<LoginFormData>({
+    resolver: zodResolver(loginFormSchema),
+    mode: "onBlur",
+  });
+
+  // Submit handler - delegates to React Router action
+  const onSubmit = (data: LoginFormData) => {
+    submit(data, { method: "post" });
+  };
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-background via-background to-muted/20 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center">Welcome back</CardTitle>
+          <CardDescription className="text-center">
+            Enter your credentials to access your account
+          </CardDescription>
+        </CardHeader>
+        <FormComponent {...form}>
+          <Form method="post" onSubmit={form.handleSubmit(onSubmit)}>
+            <CardContent className="flex flex-col gap-4">
+              {/* General error message */}
+              {actionData?.errors?.general && (
+                <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md border border-destructive/20">
+                  {actionData.errors.general}
+                </div>
+              )}
+
+              {/* Email field */}
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          className="pl-10"
+                          type="email"
+                          autoComplete="email"
+                          required
+                          disabled={isSubmitting}
+                          aria-invalid={actionData?.errors?.email ? "true" : undefined}
+                          aria-describedby={actionData?.errors?.email ? "email-error" : undefined}
+                          {...field}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+              {/* Password field with show/hide toggle */}
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10 pointer-events-none" />
+                        <PasswordInput
+                          className="pl-10"
+                          autoComplete="current-password"
+                          placeholder="••••••••"
+                          required
+                          disabled={isSubmitting}
+                          aria-invalid={actionData?.errors?.password ? "true" : undefined}
+                          aria-describedby={actionData?.errors?.password ? "password-error" : undefined}
+                          {...field}
+                          value={(field.value as string) ?? ''}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+            <CardFooter className="flex flex-col pt-5 space-y-5">
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? "Signing in..." : "Sign in"}
+              </Button>
+              <div className="text-sm text-center text-muted-foreground">
+                Don't have an account?{" "}
+                <Link to="/register" className="text-primary hover:underline font-medium">
+                  Sign up
+                </Link>
+              </div>
+              <div className="text-sm text-center text-muted-foreground">
+                <Link to="/" className="text-primary hover:underline font-medium">
+                  Back to home
+                </Link>
+              </div>
+            </CardFooter>
+          </Form>
+        </FormComponent>
+
+      </Card>
+    </div>
+  );
+}

@@ -1,0 +1,196 @@
+================================================================================
+DATABASE MIGRATION STRUCTURE EXPLANATION
+================================================================================
+
+Your project has TWO different migration approaches in TWO different locations:
+
+--------------------------------------------------------------------------------
+1. internal/db/migrations/
+--------------------------------------------------------------------------------
+Location: internal/db/migrations/migrate.go
+
+What it is:
+- Go code that uses GORM's AutoMigrate feature
+- Automatically creates/updates tables based on your Go structs
+- Part of your internal application code
+
+How it works:
+- Reads your domain models (User, Account, UserSession)
+- Automatically generates SQL CREATE TABLE statements
+- Runs migrations directly from Go code
+- No manual SQL needed
+
+Advantages:
+✓ Easy to use - just run one command
+✓ Automatically syncs with your Go structs
+✓ Great for development
+✓ Less error-prone
+✓ Handles adding new columns automatically
+
+Disadvantages:
+✗ Cannot drop columns
+✗ Cannot change column types
+✗ Less control over exact SQL
+✗ Not recommended for production
+
+Example usage:
+  make migrate-up        → Creates all tables
+  make migrate-fresh     → Drops and recreates tables
+
+What happens internally:
+  1. Looks at domain.User struct
+  2. Generates: CREATE TABLE users (id VARCHAR(255), name VARCHAR(255)...)
+  3. Executes the SQL automatically
+
+--------------------------------------------------------------------------------
+2. db/migrations/sql/
+--------------------------------------------------------------------------------
+Location: db/migrations/sql/*.sql files
+
+What it is:
+- Raw SQL files that you write manually
+- Explicit SQL statements for creating/dropping tables
+- Traditional database migration approach
+- NOT currently being used by the migrate command
+
+Files included:
+- 001_create_users_table.up.sql     (creates users table)
+- 001_create_users_table.down.sql   (drops users table)
+- 002_create_accounts_table.up.sql   (creates accounts table)
+- 002_create_accounts_table.down.sql (drops accounts table)
+- 003_create_user_sessions_table.up.sql   (creates sessions table)
+- 003_create_user_sessions_table.down.sql (drops sessions table)
+
+How it works:
+- You write exact SQL commands
+- You run them manually with psql or a migration tool
+- Full control over database schema
+
+Advantages:
+✓ Complete control over SQL
+✓ Can drop columns, change types, anything
+✓ Industry standard for production
+✓ Version controlled
+✓ Can rollback easily (.down.sql files)
+✓ Database-specific optimizations
+
+Disadvantages:
+✗ More manual work
+✗ Need to update SQL files when models change
+✗ More prone to typos/errors
+✗ Requires migration tool or manual psql commands
+
+Example usage (manual):
+  psql $DATABASE_URL < db/migrations/sql/001_create_users_table.up.sql
+
+To rollback:
+  psql $DATABASE_URL < db/migrations/sql/001_create_users_table.down.sql
+
+--------------------------------------------------------------------------------
+KEY DIFFERENCES
+--------------------------------------------------------------------------------
+
+LOCATION:
+  internal/db/migrations/  → Inside your Go application code
+  db/migrations/sql/       → Outside, in project root
+
+LANGUAGE:
+  internal/db/migrations/  → Go code (.go files)
+  db/migrations/sql/       → SQL code (.sql files)
+
+AUTOMATION LEVEL:
+  internal/db/migrations/  → Automatic (GORM reads your structs)
+  db/migrations/sql/       → Manual (you write exact SQL)
+
+EXECUTION:
+  internal/db/migrations/  → Run with: make migrate-up
+  db/migrations/sql/       → Run with: psql or migration tool
+
+CURRENTLY ACTIVE:
+  internal/db/migrations/  → YES ✓ (used by cmd/migrate/main.go)
+  db/migrations/sql/       → NO ✗ (reference only, not executed)
+
+BEST FOR:
+  internal/db/migrations/  → Development, quick prototyping
+  db/migrations/sql/       → Production, complex migrations
+
+--------------------------------------------------------------------------------
+WHICH ONE ARE YOU USING?
+--------------------------------------------------------------------------------
+
+Currently, when you run:
+  make migrate-up
+
+It uses: internal/db/migrations/migrate.go
+It calls: migrations.AutoMigrate(database)
+Which reads: domain.User, domain.Account, domain.UserSession structs
+And creates: Tables automatically
+
+The SQL files in db/migrations/sql/ are:
+- Reference documentation
+- For manual execution if needed
+- For production deployments
+- Currently NOT executed by make migrate-up
+
+--------------------------------------------------------------------------------
+EXAMPLE COMPARISON
+--------------------------------------------------------------------------------
+
+Scenario: Add a new field "phone_number" to User
+
+USING internal/db/migrations/:
+  1. Edit internal/domain/users.go
+  2. Add: PhoneNumber string `gorm:"type:varchar(20)"`
+  3. Run: make migrate-up
+  4. Done! GORM automatically adds the column
+
+USING db/migrations/sql/:
+  1. Create: 004_add_phone_to_users.up.sql
+  2. Write: ALTER TABLE users ADD COLUMN phone_number VARCHAR(20);
+  3. Create: 004_add_phone_to_users.down.sql
+  4. Write: ALTER TABLE users DROP COLUMN phone_number;
+  5. Run: psql $DATABASE_URL < db/migrations/sql/004_add_phone_to_users.up.sql
+  6. Done!
+
+As you can see, the Go approach is faster for development.
+
+--------------------------------------------------------------------------------
+RECOMMENDATION
+--------------------------------------------------------------------------------
+
+Development:
+  → Use internal/db/migrations/ (GORM AutoMigrate)
+  → Fast, easy, automatic
+  → Current setup: make migrate-up
+
+Production:
+  → Use db/migrations/sql/ (Manual SQL)
+  → More control, more reliable
+  → Requires migration tool like golang-migrate
+
+You can use both:
+  → Develop with GORM AutoMigrate
+  → Generate SQL files for production
+  → Version control the SQL files
+
+--------------------------------------------------------------------------------
+SUMMARY
+--------------------------------------------------------------------------------
+
+internal/db/migrations/migrate.go:
+  - Go code
+  - GORM AutoMigrate
+  - Automatic
+  - Currently ACTIVE
+  - Development-friendly
+
+db/migrations/sql/:
+  - SQL files
+  - Manual execution
+  - Explicit control
+  - Currently REFERENCE ONLY
+  - Production-ready
+
+Both create the same tables, just different approaches!
+
+================================================================================

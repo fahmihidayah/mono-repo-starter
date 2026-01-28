@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(go get:*)",
+      "Bash(chmod:*)",
+      "Bash(cat:*)",
+      "Bash(go run:*)",
+      "Bash(go install:*)",
+      "Bash(~/go/bin/swag init:*)",
+      "Bash(go build:*)",
+      "Bash(tree:*)",
+      "Bash(find:*)",
+      "Bash(docker-compose build:*)",
+      "Bash(docker compose:*)",
+      "Bash(go test:*)",
+      "Bash(perl -i.bak -pe:*)",
+      "Bash(perl:*)",
+      "Bash(git rm:*)",
+      "Bash(git commit:*)",
+      "Bash(grep:*)",
+      "Bash(~/go/bin/swag:*)",
+      "Bash(ls:*)",
+      "Bash(head:*)",
+      "Bash(test:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

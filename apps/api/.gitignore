@@ -1,0 +1,25 @@
+# API-specific ignores
+# Most patterns are handled by root .gitignore
+# Only add API-specific exceptions here
+
+# Go specific build artifacts
+api
+api.exe
+main
+
+# Air live reload
+tmp/
+
+# API-specific database files (if any)
+data/
+*.db-journal
+
+# API-specific logs
+logs/api/
+
+# Swagger/OpenAPI generated files
+docs/swagger.json
+docs/swagger.yaml
+
+# Migration files (if using tools that generate them)
+# migrations/*.sql
