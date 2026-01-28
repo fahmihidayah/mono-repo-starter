@@ -1,5 +1,7 @@
+import { useLoaderData } from "react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { useSession } from "~/lib/auth-client";
+import { requireAuth } from "~/lib/auth-guard.server";
+import type { Route } from "./+types/dashboard._index";
 
 export function meta() {
   return [
@@ -8,12 +10,13 @@ export function meta() {
   ];
 }
 
-export default function DashboardIndex() {
-  const { data: session } = useSession();
+export async function loader({ request }: Route.LoaderArgs) {
+  const user = await requireAuth(request);
+  return { user };
+}
 
-  if (!session) {
-    return null;
-  }
+export default function DashboardIndex() {
+  const { user } = useLoaderData<typeof loader>();
 
   return (
     <div className="flex-1 p-6">
@@ -21,7 +24,7 @@ export default function DashboardIndex() {
         {/* Welcome Section */}
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            Welcome back, {session.user.name}!
+            Welcome back, {user.userName}!
           </h1>
           <p className="text-muted-foreground mt-2">
             Here's what's happening with your account today.
@@ -49,14 +52,8 @@ export default function DashboardIndex() {
               </svg>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {session.user.emailVerified ? "Verified" : "Unverified"}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {session.user.emailVerified
-                  ? "Your email is verified"
-                  : "Please verify your email"}
-              </p>
+              <div className="text-2xl font-bold">Active</div>
+              <p className="text-xs text-muted-foreground">Your account is active</p>
             </CardContent>
           </Card>
 
@@ -78,14 +75,14 @@ export default function DashboardIndex() {
               </svg>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold truncate">{session.user.email}</div>
+              <div className="text-2xl font-bold truncate">{user.userEmail}</div>
               <p className="text-xs text-muted-foreground">Your account email</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Member Since</CardTitle>
+              <CardTitle className="text-sm font-medium">User ID</CardTitle>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -103,10 +100,8 @@ export default function DashboardIndex() {
               </svg>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {new Date(session.user.createdAt).toLocaleDateString()}
-              </div>
-              <p className="text-xs text-muted-foreground">Account creation date</p>
+              <div className="text-xl font-bold font-mono truncate">{user.userId}</div>
+              <p className="text-xs text-muted-foreground">Your unique identifier</p>
             </CardContent>
           </Card>
         </div>
@@ -123,28 +118,20 @@ export default function DashboardIndex() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">User ID</p>
-                <p className="text-sm font-mono mt-1">{session.user.id}</p>
+                <p className="text-sm font-mono mt-1">{user.userId}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Full Name</p>
-                <p className="text-sm mt-1">{session.user.name}</p>
+                <p className="text-sm mt-1">{user.userName}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Email Address</p>
-                <p className="text-sm mt-1">{session.user.email}</p>
+                <p className="text-sm mt-1">{user.userEmail}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Email Verification
-                </p>
+                <p className="text-sm font-medium text-muted-foreground">Status</p>
                 <p className="text-sm mt-1">
-                  {session.user.emailVerified ? (
-                    <span className="text-green-600 dark:text-green-400">✓ Verified</span>
-                  ) : (
-                    <span className="text-yellow-600 dark:text-yellow-400">
-                      ⚠ Not verified
-                    </span>
-                  )}
+                  <span className="text-green-600 dark:text-green-400">✓ Active</span>
                 </p>
               </div>
             </div>

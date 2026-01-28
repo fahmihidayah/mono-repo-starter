@@ -3,7 +3,8 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import { PasswordInput } from "~/components/ui/password-input";
-import { serverLogin } from "~/lib/auth-client";
+import { getSession, commitSession } from "~/session.server";
+import { authenticateUser, calculateSessionMaxAge } from "~/lib/auth.server";
 import type { Route } from "./+types/route";
 import { useForm } from "react-hook-form";
 import { loginFormSchema, type LoginFormData } from "./types";
@@ -17,6 +18,7 @@ import {
   FormMessage,
 } from '~/components/ui/form';
 import { Lock, Mail } from "lucide-react";
+import type { AuthData } from "~/lib/api/auth";
 
 // Meta function for SEO
 export function meta() {
@@ -41,23 +43,24 @@ export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
   const data = Object.fromEntries(formData);
 
-  // Server-side validation
-  const errors: { email?: string; password?: string; general?: string } = {};
-  const resultValidation = loginFormSchema.safeParse(data);
+  // Validate form data with Zod
+  const validation = loginFormSchema.safeParse(data);
 
-  if (!resultValidation.success) {
+  if (!validation.success) {
+    const fieldErrors = validation.error.flatten((issue) => issue.message).fieldErrors;
     return {
       success: false,
       errors: {
-        ...resultValidation.error.flatten().fieldErrors,
+        ...fieldErrors,
         general: "Please correct the errors below and try again."
       } as ActionData["errors"]
     };
   }
-  // Login using centralized auth client
-  const result = await serverLogin(resultValidation.data);
 
-  if (!result.success) {
+  // Authenticate with Go API
+  const result = await authenticateUser(validation.data);
+
+  if (!result.success || !result.data) {
     return {
       success: false,
       errors: {
@@ -66,8 +69,24 @@ export async function action({ request }: Route.ActionArgs) {
     } as ActionData;
   }
 
-  // Redirect to dashboard with cookie headers
-  return redirect("/dashboard", { headers: result.headers });
+  // Create session with auth data
+  const session = await getSession(request.headers.get("Cookie"));
+  const { token, id, name, email, exp } = result.data ;
+
+  session.set("userId", id);
+  session.set("token", token);
+  session.set("userName", name);
+  session.set("userEmail", email);
+
+  // Calculate session expiration from token
+  const maxAge = calculateSessionMaxAge(exp);
+
+  // Commit session and redirect
+  return redirect("/dashboard", {
+    headers: {
+      "Set-Cookie": await commitSession(session, { maxAge }),
+    },
+  });
 }
 
 // Login component

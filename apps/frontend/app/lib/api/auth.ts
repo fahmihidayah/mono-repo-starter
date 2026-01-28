@@ -24,6 +24,7 @@ export interface AuthData {
   name: string;
   email: string;
   token: string;
+  exp : number;
   created_at: string;
 }
 
