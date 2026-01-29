@@ -67,13 +67,23 @@ func (c *AuthUserController) RegisterUser(w http.ResponseWriter, r *http.Request
 	}
 
 	// Register user (with email verification)
-	if err := c.userService.Register(r.Context(), &req); err != nil {
-		utils.SendBadRequest(w, err.Error())
+	userWithToken, err := c.userService.Register(r.Context(), &req)
+
+	if err != nil {
+		utils.SendBadRequest(w, "Registration failed: "+err.Error())
 		return
 	}
 
+	userData := map[string]interface{}{
+		"id":         userWithToken.User.ID,
+		"email":      userWithToken.User.Email,
+		"name":       userWithToken.User.Name,
+		"created_at": userWithToken.User.CreatedAt,
+		"token":      userWithToken.Token,
+		"exp":        userWithToken.Exp,
+	}
 	// Success response
-	utils.SendCreated(w, "User registered successfully. Please check your email to verify your account.", map[string]string{"email": req.Email})
+	utils.SendCreated(w, "User registered successfully. Please check your email to verify your account.", userData)
 }
 
 // Login handles user authentication

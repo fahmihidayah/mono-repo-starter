@@ -4,10 +4,10 @@ import { Input } from "~/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import { PasswordInput } from "~/components/ui/password-input";
 import { getSession, commitSession } from "~/session.server";
-import { authenticateUser, calculateSessionMaxAge } from "~/lib/auth.server";
+import { registerUser, calculateSessionMaxAge } from "~/lib/auth.server";
 import type { Route } from "./+types/route";
 import { useForm } from "react-hook-form";
-import { loginFormSchema, type LoginFormData } from "./types";
+import { registerFormSchema, type RegisterFormData } from "./types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form as FormComponent,
@@ -17,30 +17,24 @@ import {
   FormLabel,
   FormMessage,
 } from '~/components/ui/form';
-import { Lock, Mail } from "lucide-react";
+import { Lock, Mail, User } from "lucide-react";
 import type { ActionData } from "~/types";
 
 // Meta function for SEO
 export function meta() {
   return [
-    { title: "Login - Starter App" },
-    { name: "description", content: "Sign in to your account" },
+    { title: "Register - Starter App" },
+    { name: "description", content: "Create a new account" },
   ];
 }
 
-// export type ActionData = {
-//   success: boolean;
-//   errors: { [key: string]: string | undefined }
-// };
-
-
-// Server action for login
+// Server action for registration
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
   const data = Object.fromEntries(formData);
 
   // Validate form data with Zod
-  const validation = loginFormSchema.safeParse(data);
+  const validation = registerFormSchema.safeParse(data);
 
   if (!validation.success) {
     const fieldErrors = validation.error.flatten((issue) => issue.message).fieldErrors;
@@ -52,21 +46,22 @@ export async function action({ request }: Route.ActionArgs) {
     } as ActionData;
   }
 
-  // Authenticate with Go API
-  const result = await authenticateUser(validation.data);
+  // Register with Go API
+  const { confirmPassword, ...registerData } = validation.data;
+  const result = await registerUser(registerData);
 
   if (!result.success || !result.data) {
     return {
       success: false,
       errors: {
-        general: result.error || "Invalid email or password. Please try again.",
-      } 
-    } as ActionData; 
+        general: result.error || "Registration failed. Please try again.",
+      }
+    } as ActionData;
   }
 
   // Create session with auth data
   const session = await getSession(request.headers.get("Cookie"));
-  const { token, id, name, email, exp } = result.data ;
+  const { token, id, name, email, exp } = result.data;
 
   session.set("userId", id);
   session.set("token", token);
@@ -84,30 +79,31 @@ export async function action({ request }: Route.ActionArgs) {
   });
 }
 
-// Login component
-export default function Login() {
+// Register component
+export default function Register() {
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const submit = useSubmit();
   const isSubmitting = navigation.state === "submitting";
 
   // Initialize React Hook Form with Zod validation
-  const form = useForm<LoginFormData>({
-    resolver: zodResolver(loginFormSchema),
+  const form = useForm<RegisterFormData>({
+    resolver: zodResolver(registerFormSchema),
     mode: "onBlur",
   });
 
   // Submit handler - delegates to React Router action
-  const onSubmit = (data: LoginFormData) => {
+  const onSubmit = (data: RegisterFormData) => {
     submit(data, { method: "post" });
   };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-background via-background to-muted/20 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Welcome back</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Create an account</CardTitle>
           <CardDescription className="text-center">
-            Enter your credentials to access your account
+            Enter your information to get started
           </CardDescription>
         </CardHeader>
         <FormComponent {...form}>
@@ -119,6 +115,33 @@ export default function Login() {
                   {actionData.errors.general}
                 </div>
               )}
+
+              {/* Name field */}
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          className="pl-10"
+                          type="text"
+                          placeholder="John Doe"
+                          autoComplete="name"
+                          required
+                          disabled={isSubmitting}
+                          aria-invalid={actionData?.errors?.name ? "true" : undefined}
+                          aria-describedby={actionData?.errors?.name ? "name-error" : undefined}
+                          {...field}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
 
               {/* Email field */}
               <FormField
@@ -133,6 +156,7 @@ export default function Login() {
                         <Input
                           className="pl-10"
                           type="email"
+                          placeholder="john.doe@example.com"
                           autoComplete="email"
                           required
                           disabled={isSubmitting}
@@ -146,7 +170,7 @@ export default function Login() {
                   </FormItem>
                 )} />
 
-              {/* Password field with show/hide toggle */}
+              {/* Password field */}
               <FormField
                 control={form.control}
                 name="password"
@@ -158,12 +182,40 @@ export default function Login() {
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10 pointer-events-none" />
                         <PasswordInput
                           className="pl-10"
-                          autoComplete="current-password"
+                          autoComplete="new-password"
                           placeholder="••••••••"
                           required
                           disabled={isSubmitting}
-                          aria-invalid={actionData?.errors['password'] ? "true" : undefined}
+                          aria-invalid={actionData?.errors?.password ? "true" : undefined}
                           aria-describedby={actionData?.errors?.password ? "password-error" : undefined}
+                          {...field}
+                          value={(field.value as string) ?? ''}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Confirm Password field */}
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10 pointer-events-none" />
+                        <PasswordInput
+                          className="pl-10"
+                          autoComplete="new-password"
+                          placeholder="••••••••"
+                          required
+                          disabled={isSubmitting}
+                          aria-invalid={actionData?.errors?.confirmPassword ? "true" : undefined}
+                          aria-describedby={actionData?.errors?.confirmPassword ? "confirmPassword-error" : undefined}
                           {...field}
                           value={(field.value as string) ?? ''}
                         />
@@ -176,12 +228,12 @@ export default function Login() {
             </CardContent>
             <CardFooter className="flex flex-col pt-5 space-y-5">
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "Signing in..." : "Sign in"}
+                {isSubmitting ? "Creating account..." : "Create account"}
               </Button>
               <div className="text-sm text-center text-muted-foreground">
-                Don't have an account?{" "}
-                <Link to="/register" className="text-primary hover:underline font-medium">
-                  Sign up
+                Already have an account?{" "}
+                <Link to="/login" className="text-primary hover:underline font-medium">
+                  Sign in
                 </Link>
               </div>
               <div className="text-sm text-center text-muted-foreground">
@@ -192,7 +244,6 @@ export default function Login() {
             </CardFooter>
           </Form>
         </FormComponent>
-
       </Card>
     </div>
   );

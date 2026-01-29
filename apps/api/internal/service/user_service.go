@@ -18,7 +18,7 @@ import (
 
 // IUserService defines the interface for user service operations
 type IUserService interface {
-	Register(ctx context.Context, user *request.CreateUserRequest) error
+	Register(ctx context.Context, user *request.CreateUserRequest) (*response.UserResponse, error)
 	Create(ctx context.Context, user *request.CreateUserRequest) error
 	Login(ctx context.Context, req *request.LoginUserRequest) (*response.UserResponse, error)
 	Logout(ctx context.Context, token string, userID string) error
@@ -60,10 +60,10 @@ func UserServiceProvider(userRepo repository.IUserRepository, tokenBlacklistRepo
 	}
 }
 
-func (s *UserServiceImpl) Register(ctx context.Context, user *request.CreateUserRequest) error {
+func (s *UserServiceImpl) Register(ctx context.Context, user *request.CreateUserRequest) (*response.UserResponse, error) {
 	// Validate request
 	if err := s.validate.Struct(user); err != nil {
-		return err
+		return nil, err
 	}
 
 	// Sanitize email
@@ -72,19 +72,19 @@ func (s *UserServiceImpl) Register(ctx context.Context, user *request.CreateUser
 	// Validate email uniqueness
 	existingUser, err := s.userRepository.GetByEmail(ctx, user.Email)
 	if err == nil && existingUser != nil {
-		return errors.New("email already in use")
+		return nil, errors.New("email already in use")
 	}
 
 	// Hash password
 	password, err := security.HashPassword(user.Password)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Generate verification token
 	verificationToken, err := utils.GenerateVerificationToken()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Create new user
@@ -105,17 +105,22 @@ func (s *UserServiceImpl) Register(ctx context.Context, user *request.CreateUser
 
 	// Create user in database first
 	if err := s.userRepository.Create(ctx, newUser); err != nil {
-		return err
+		return nil, err
 	}
-
+	s.mailer.SendVerifyEmail(newUser)
 	// Then send verification email
-	if err := s.mailer.SendVerifyEmail(newUser); err != nil {
-		// User is created but email failed - this is acceptable
-		// User can request a new verification email
-		return err
-	}
+	// if err := s.mailer.SendVerifyEmail(newUser); err != nil {
+	// 	// User is created but email failed - this is acceptable
+	// 	// User can request a new verification email
+	// 	return err
+	// }
 
-	return nil
+	userWithToken, err := s.Login(ctx, &request.LoginUserRequest{
+		Email:    user.Email,
+		Password: user.Password,
+	})
+
+	return userWithToken, err
 }
 
 // Create creates a new user

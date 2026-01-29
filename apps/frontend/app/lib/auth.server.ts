@@ -5,12 +5,12 @@
  * Uses React Router session storage for cookie management.
  */
 
-import type { ApiResponse, AuthData, LoginCredentials } from './api/auth';
+import type { ApiResponse, AuthData, LoginCredentials, RegisterData } from './api/auth';
 
 /**
- * Login result returned by API
+ * Authentication result returned by API
  */
-export interface LoginResult {
+export interface AuthResult {
   success: boolean;
   data?: AuthData;
   error?: string;
@@ -25,7 +25,7 @@ export interface LoginResult {
  */
 export async function authenticateUser(
   credentials: LoginCredentials
-): Promise<LoginResult> {
+): Promise<AuthResult> {
   try {
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
@@ -49,6 +49,61 @@ export async function authenticateUser(
       return {
         success: false,
         error: apiResponse.message || 'Invalid response from server',
+      };
+    }
+
+    return {
+      success: true,
+      data: apiResponse.data,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.message || 'Network error. Please try again.',
+    };
+  }
+}
+
+/**
+ * Call the Go API to register new user
+ * Does NOT set cookies - that's handled by the session storage in the action
+ *
+ * @param data - Name, email, and password
+ * @returns Authentication data or error
+ */
+export async function registerUser(
+  data: RegisterData
+): Promise<AuthResult> {
+  try {
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
+    const response = await fetch(`${apiBaseUrl}/api/users/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return {
+        success: false,
+        error: errorData.message || 'Registration failed',
+      };
+    }
+
+    const apiResponse: ApiResponse<AuthData> = await response.json();
+
+    if (apiResponse.code !== 200 && apiResponse.code !== 201) {
+      return {
+        success: false,
+        error: apiResponse.message || 'Invalid response from server',
+      };
+    }
+
+    if (!apiResponse.data?.token) {
+      return {
+        success: false,
+        error: 'Registration succeeded but no token received',
       };
     }
 
