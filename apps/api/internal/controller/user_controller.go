@@ -182,15 +182,9 @@ func (c *UserController) Update(w http.ResponseWriter, r *http.Request) {
 	// Set ID from URL
 	req.ID = id
 
-	if err := c.userService.Update(r.Context(), &req); err != nil {
-		c.SendBadRequest(w, err.Error())
-		return
-	}
-
-	// Fetch updated user to return it
-	user, err := c.userService.GetByID(r.Context(), id)
+	user, err := c.userService.Update(r.Context(), &req)
 	if err != nil {
-		c.SendInternalError(w, "User updated but failed to fetch: "+err.Error())
+		c.SendBadRequest(w, err.Error())
 		return
 	}
 

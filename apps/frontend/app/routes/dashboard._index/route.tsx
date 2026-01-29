@@ -1,7 +1,7 @@
 import { useLoaderData } from "react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { requireAuth } from "~/lib/auth-guard.server";
-import type { Route } from "./+types/dashboard._index";
+import type { Route } from "../dashboard._index/+types/route";
 
 export function meta() {
   return [

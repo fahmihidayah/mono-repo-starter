@@ -40,7 +40,7 @@ export function DashboardLayout({ user, signOutAction, config = {} }: DashboardL
       {/* Main Content */}
       <SidebarInset>
         {/* Header */}
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 w-full">
           <SidebarTrigger />
           <Separator orientation="vertical" className="h-6" />
           <div className="flex items-center gap-2">
@@ -49,7 +49,7 @@ export function DashboardLayout({ user, signOutAction, config = {} }: DashboardL
         </header>
 
         {/* Page Content */}
-        <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col w-full">
           <Outlet />
         </div>
       </SidebarInset>

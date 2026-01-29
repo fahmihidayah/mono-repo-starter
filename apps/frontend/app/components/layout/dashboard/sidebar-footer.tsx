@@ -64,19 +64,28 @@ export function DashboardSidebarFooter({ user, signOutAction }: DashboardSidebar
                 id="logout-form"
                 method="post"
                 action={signOutAction || "/logout"}
-                style={{ display: 'none' }}
-              />
+              >
+                <Button
+                variant="outline"
+                size="sm"
+                className="w-full justify-start"
+                // onClick={() => setShowLogoutDialog(true)}
+              >
+                <LogOut className="mr-2 size-4" />
+                Sign out 
+              </Button>
+              </Form>
 
               {/* Logout button that shows confirmation dialog */}
-              <Button
+              {/* <Button
                 variant="outline"
                 size="sm"
                 className="w-full justify-start"
                 onClick={() => setShowLogoutDialog(true)}
               >
                 <LogOut className="mr-2 size-4" />
-                Sign out
-              </Button>
+                Sign out aa
+              </Button> */}
             </div>
           </SidebarMenuItem>
         </SidebarMenu>

@@ -4,7 +4,7 @@ import { Input } from "~/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import { PasswordInput } from "~/components/ui/password-input";
 import { getSession, commitSession } from "~/session.server";
-import { authenticateUser, calculateSessionMaxAge } from "~/lib/auth.server";
+// import { authenticateUser, calculateSessionMaxAge } from "~/lib/auth.server";
 import type { Route } from "../_auth.login/+types/route";
 import { useForm } from "react-hook-form";
 import { loginFormSchema, type LoginFormData } from "./types";
@@ -19,6 +19,8 @@ import {
 } from '~/components/ui/form';
 import { Lock, Mail } from "lucide-react";
 import type { ActionData } from "~/types";
+import { authApi } from "~/lib/api/auth";
+import { calculateSessionMaxAge } from "~/lib/utils";
 
 // Meta function for SEO
 export function meta() {
@@ -53,13 +55,13 @@ export async function action({ request }: Route.ActionArgs) {
   }
 
   // Authenticate with Go API
-  const result = await authenticateUser(validation.data);
+  const result = await authApi.login(validation.data);
 
-  if (!result.success || !result.data) {
+  if (result.code !== 200 || !result.data) {
     return {
       success: false,
       errors: {
-        general: result.error || "Invalid email or password. Please try again.",
+        general: result.message || "Invalid email or password. Please try again.",
       } 
     } as ActionData; 
   }
@@ -175,19 +177,32 @@ export default function Login() {
                 )}
               />
             </CardContent>
-            <CardFooter className="flex flex-col pt-5 space-y-5">
+            <CardFooter className="flex flex-col pt-5 space-y-4">
               <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isSubmitting ? "Signing in..." : "Sign in"}
               </Button>
+
+              <div className="text-sm text-center text-muted-foreground">
+                <Link to="/forgot-password" className="text-primary hover:underline font-medium">
+                  Forgot password?
+                </Link>
+              </div>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">
+                    Or
+                  </span>
+                </div>
+              </div>
+
               <div className="text-sm text-center text-muted-foreground">
                 Don't have an account?{" "}
                 <Link to="/register" className="text-primary hover:underline font-medium">
                   Sign up
-                </Link>
-              </div>
-              <div className="text-sm text-center text-muted-foreground">
-                <Link to="/" className="text-primary hover:underline font-medium">
-                  Back to home
                 </Link>
               </div>
             </CardFooter>

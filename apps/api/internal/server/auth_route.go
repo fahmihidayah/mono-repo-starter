@@ -15,6 +15,10 @@ func (server *Server) authRoute(r chi.Router) {
 		r.Group(func(r chi.Router) {
 			r.Use(server.authMiddleware)
 			r.Post("/logout", server.authController.Logout)
+
+			r.Put("/change-password", server.authController.ChangePassword)
+			r.Put("/me", server.authController.UpdateUserProfile)
+			r.Get("/me", server.authController.GetUserProfile)
 		})
 	})
 }

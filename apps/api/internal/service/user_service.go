@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/fahmihidayah/go-api-orchestrator/internal/config"
@@ -24,7 +25,7 @@ type IUserService interface {
 	Logout(ctx context.Context, token string, userID string) error
 	GetByID(ctx context.Context, id string) (*domain.User, error)
 	GetByEmail(ctx context.Context, email string) (*domain.User, error)
-	Update(ctx context.Context, req *request.UpdateUserRequest) error
+	Update(ctx context.Context, req *request.UpdateUserRequest) (*domain.User, error)
 	Delete(ctx context.Context, id string) error
 	DeleteAll(ctx context.Context, req *request.BulkDeleteRequest) error
 	GetAll(ctx context.Context, filter *request.FilterUserRequest) ([]domain.User, int64, error)
@@ -38,6 +39,7 @@ type IUserService interface {
 	GetAllReactAdmin(ctx context.Context, limit, offset int, sortField, sortOrder string, filters map[string]interface{}) ([]domain.User, int64, error)
 	GetByIDs(ctx context.Context, ids []string) ([]domain.User, error)
 	GetWithQueryParams(ctx context.Context, queryParams *utils.QueryParams) ([]domain.User, int64, error)
+	ChangePassword(ctx context.Context, req *request.ChangePasswordRequest) error
 }
 
 // UserServiceImpl implements IUserService
@@ -236,16 +238,16 @@ func (s *UserServiceImpl) GetByID(ctx context.Context, id string) (*domain.User,
 }
 
 // Update updates user information
-func (s *UserServiceImpl) Update(ctx context.Context, req *request.UpdateUserRequest) error {
+func (s *UserServiceImpl) Update(ctx context.Context, req *request.UpdateUserRequest) (*domain.User, error) {
 	// Validate request
 	if err := s.validate.Struct(req); err != nil {
-		return err
+		return nil, err
 	}
 
 	// Get existing user
 	user, err := s.userRepository.GetByID(ctx, req.ID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Update only provided fields
@@ -255,7 +257,7 @@ func (s *UserServiceImpl) Update(ctx context.Context, req *request.UpdateUserReq
 		if sanitizedEmail != user.Email {
 			existingUser, err := s.userRepository.GetByEmail(ctx, sanitizedEmail)
 			if err == nil && existingUser != nil {
-				return errors.New("email already in use")
+				return nil, errors.New("email already in use")
 			}
 		}
 		user.Email = sanitizedEmail
@@ -267,7 +269,11 @@ func (s *UserServiceImpl) Update(ctx context.Context, req *request.UpdateUserReq
 
 	user.UpdatedAt = time.Now()
 
-	return s.userRepository.Update(ctx, user)
+	if err := s.userRepository.Update(ctx, user); err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
 
 // Delete deletes a user
@@ -500,4 +506,47 @@ func (s *UserServiceImpl) GetWithQueryParams(ctx context.Context, queryParams *u
 	}
 
 	return users, count, nil
+}
+
+func (s *UserServiceImpl) ChangePassword(ctx context.Context, req *request.ChangePasswordRequest) error {
+	log.Printf("[UserService.ChangePassword] Starting password change for user ID: %s", req.ID)
+
+	users, err := s.userRepository.GetByID(ctx, req.ID)
+	if err != nil {
+		log.Printf("[UserService.ChangePassword] User not found for ID: %s - Error: %v", req.ID, err)
+		return errors.New("user not found")
+	}
+
+	log.Printf("[UserService.ChangePassword] User found: %s, verifying old password", users.Email)
+
+	// Verify old password
+	if !security.VerifyPassword(users.HashedPassword, req.OldPassword) {
+		log.Printf("[UserService.ChangePassword] Old password verification failed for user: %s", users.Email)
+		log.Printf("[UserService.ChangePassword] Request has OldPassword length: %d", len(req.OldPassword))
+		return errors.New("old password is incorrect")
+	}
+
+	log.Printf("[UserService.ChangePassword] Old password verified successfully for user: %s", users.Email)
+
+	// Hash new password
+	newHashedPassword, err := security.HashPassword(req.NewPassword)
+	if err != nil {
+		log.Printf("[UserService.ChangePassword] Failed to hash new password for user: %s - Error: %v", users.Email, err)
+		return err
+	}
+
+	log.Printf("[UserService.ChangePassword] New password hashed successfully, updating user: %s", users.Email)
+
+	// Update user's password
+	users.HashedPassword = newHashedPassword
+	users.UpdatedAt = time.Now()
+
+	err = s.userRepository.Update(ctx, users)
+	if err != nil {
+		log.Printf("[UserService.ChangePassword] Failed to update user password in database: %s - Error: %v", users.Email, err)
+		return err
+	}
+
+	log.Printf("[UserService.ChangePassword] Password changed successfully for user: %s", users.Email)
+	return nil
 }

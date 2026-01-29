@@ -6,7 +6,11 @@
       "Bash(pnpm install:*)",
       "Bash(pnpm typecheck:*)",
       "Bash(pnpm react-router typegen:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(pnpm tsc:*)",
+      "Bash(pnpm --filter frontend react-router typegen:*)",
+      "Bash(pnpm exec react-router typegen:*)",
+      "Bash(go build:*)"
     ],
     "deny": [],
     "ask": []

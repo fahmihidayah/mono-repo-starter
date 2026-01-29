@@ -6,21 +6,31 @@ const getAuthToken = () => {
   return localStorage.getItem('auth_token');
 };
 
+export interface RequestOptions extends RequestInit {
+  token?: string; // Optional token to use for this request
+}
+
 export class ApiClient {
   private baseUrl: string;
+  private defaultToken?: string; // Optional default token for server-side usage
 
-  constructor(baseUrl: string = API_BASE_URL) {
+  constructor(baseUrl: string = API_BASE_URL, defaultToken?: string) {
     this.baseUrl = baseUrl;
+    this.defaultToken = defaultToken;
   }
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestOptions = {}
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
 
-    // Get auth token if available
-    const token = getAuthToken();
+    // Get auth token from:
+    // 1. Request-specific token (highest priority)
+    // 2. Instance default token (for server-side)
+    // 3. localStorage (for client-side)
+    const token = options.token || this.defaultToken || getAuthToken();
+
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
@@ -30,14 +40,18 @@ export class ApiClient {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
+    console.log("API Request to:", url, "with options:", headers);
     // Merge with any existing headers
     if (options.headers) {
       const existingHeaders = options.headers as Record<string, string>;
       Object.assign(headers, existingHeaders);
     }
 
+    // Remove custom token property before passing to fetch
+    const { token: _, ...fetchOptions } = options;
+
     const config: RequestInit = {
-      ...options,
+      ...fetchOptions,
       headers,
     };
 
@@ -46,7 +60,7 @@ export class ApiClient {
     if (!response.ok) {
       const errorText = await response.text();
       let errorMessage = `API Error: ${response.status} ${response.statusText}`;
-
+      console.error("API Error Response:", errorText);  
       try {
         const errorJson = JSON.parse(errorText);
         errorMessage = errorJson.message || errorJson.error || errorMessage;
@@ -61,11 +75,11 @@ export class ApiClient {
     return response.json();
   }
 
-  async get<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  async get<T>(endpoint: string, options?: RequestOptions): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: 'GET' });
   }
 
-  async post<T>(endpoint: string, data?: unknown, options?: RequestInit): Promise<T> {
+  async post<T>(endpoint: string, data?: unknown, options?: RequestOptions): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
       method: 'POST',
@@ -73,7 +87,7 @@ export class ApiClient {
     });
   }
 
-  async put<T>(endpoint: string, data?: unknown, options?: RequestInit): Promise<T> {
+  async put<T>(endpoint: string, data?: unknown, options?: RequestOptions): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
       method: 'PUT',
@@ -81,7 +95,7 @@ export class ApiClient {
     });
   }
 
-  async patch<T>(endpoint: string, data?: unknown, options?: RequestInit): Promise<T> {
+  async patch<T>(endpoint: string, data?: unknown, options?: RequestOptions): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
       method: 'PATCH',
@@ -89,7 +103,7 @@ export class ApiClient {
     });
   }
 
-  async delete<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  async delete<T>(endpoint: string, options?: RequestOptions): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: 'DELETE' });
   }
 }

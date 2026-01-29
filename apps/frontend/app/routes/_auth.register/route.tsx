@@ -4,7 +4,6 @@ import { Input } from "~/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import { PasswordInput } from "~/components/ui/password-input";
 import { getSession, commitSession } from "~/session.server";
-import { registerUser, calculateSessionMaxAge } from "~/lib/auth.server";
 import type { Route } from "./+types/route";
 import { useForm } from "react-hook-form";
 import { registerFormSchema, type RegisterFormData } from "./types";
@@ -19,6 +18,8 @@ import {
 } from '~/components/ui/form';
 import { Lock, Mail, User } from "lucide-react";
 import type { ActionData } from "~/types";
+import { authApi } from "~/lib/api/auth";
+import { calculateSessionMaxAge } from "~/lib/utils";
 
 // Meta function for SEO
 export function meta() {
@@ -48,13 +49,13 @@ export async function action({ request }: Route.ActionArgs) {
 
   // Register with Go API
   const { confirmPassword, ...registerData } = validation.data;
-  const result = await registerUser(registerData);
+  const result = await authApi.register(registerData);
 
-  if (!result.success || !result.data) {
+  if (result.code !== 200 || !result.data) {
     return {
       success: false,
       errors: {
-        general: result.error || "Registration failed. Please try again.",
+        general: result.message || "Registration failed. Please try again.",
       }
     } as ActionData;
   }

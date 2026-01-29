@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
 
@@ -229,4 +230,104 @@ func (c *AuthUserController) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.SendSuccess(w, "Logout successful", nil)
+}
+
+func (c *AuthUserController) UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[AuthUserController.UpdateUserProfile] Starting profile update request")
+
+	var req request.BaseUserRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Printf("[AuthUserController.UpdateUserProfile] Failed to decode request body: %v", err)
+		utils.SendBadRequest(w, "Invalid request body")
+		return
+	}
+
+	// Get user ID from context (set by auth middleware)
+	userID, ok := middleware.GetUserIDFromContext(r.Context())
+	if !ok {
+		log.Printf("[AuthUserController.UpdateUserProfile] User ID not found in context")
+		utils.SendUnauthorized(w, "User not found in context")
+		return
+	}
+
+	log.Printf("[AuthUserController.UpdateUserProfile] Updating profile for user ID: %s", userID)
+	log.Printf("[AuthUserController.UpdateUserProfile] Request data - Name: %s, Email: %s", req.Name, req.Email)
+
+	var updateReq request.UpdateUserRequest = request.UpdateUserRequest{
+		BaseUserRequest: req,
+		ID:              userID,
+	}
+
+	user, err := c.userService.Update(r.Context(), &updateReq)
+
+	if err != nil {
+		log.Printf("[AuthUserController.UpdateUserProfile] Failed to update profile for user %s: %v", userID, err)
+		utils.SendBadRequest(w, "Failed to update profile: "+err.Error())
+		return
+	}
+
+	log.Printf("[AuthUserController.UpdateUserProfile] Profile updated successfully for user ID: %s", userID)
+	utils.SendSuccess(w, "Profile updated successfully", map[string]interface{}{
+		"id":         user.ID,
+		"email":      user.Email,
+		"name":       user.Name,
+		"created_at": user.CreatedAt,
+	})
+}
+
+func (c *AuthUserController) GetUserProfile(w http.ResponseWriter, r *http.Request) {
+	// Get user ID from context (set by auth middleware)
+	userID, ok := middleware.GetUserIDFromContext(r.Context())
+	if !ok {
+		utils.SendUnauthorized(w, "User not found in context")
+		return
+	}
+
+	user, err := c.userService.GetByID(r.Context(), userID)
+	if err != nil {
+		utils.SendBadRequest(w, "Failed to get user profile: "+err.Error())
+		return
+	}
+
+	userData := map[string]interface{}{
+		"id":         user.ID,
+		"email":      user.Email,
+		"name":       user.Name,
+		"created_at": user.CreatedAt,
+	}
+
+	utils.SendSuccess(w, "User profile retrieved successfully", userData)
+}
+func (c *AuthUserController) ChangePassword(w http.ResponseWriter, r *http.Request) {
+
+	var req request.ChangePasswordRequest
+	log.Printf("[AuthUserController.ChangePassword] Starting change password request")
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Printf("[AuthUserController.ChangePassword] Starting change password request %s error : %v", r.Body, err)
+		utils.SendBadRequest(w, "Invalid request body")
+		return
+	}
+
+	// Get user ID from context (set by auth middleware)
+	userID, ok := middleware.GetUserIDFromContext(r.Context())
+	if !ok {
+		log.Printf("[AuthUserController.ChangePassword] Starting change password request %s error : %v", r.Body, ok)
+		utils.SendUnauthorized(w, "User not found in context")
+		return
+	}
+
+	req.ID = userID
+
+	err := c.userService.ChangePassword(r.Context(), &req)
+
+	if err != nil {
+		log.Printf("[AuthUserController.ChangePassword] Starting change password request %s error : %v", r.Body, err)
+		utils.SendBadRequest(w, "Failed to change password: "+err.Error())
+		return
+	}
+
+	utils.SendSuccess(w, "Password changed successfully", nil)
+
 }

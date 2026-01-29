@@ -48,12 +48,39 @@ export const authApi = {
   },
 
   // Logout - POST /api/users/auth/logout
-  logout: async (): Promise<ApiResponse<null>> => {
-    return apiClient.post<ApiResponse<null>>('/api/users/auth/logout');
+  logout: async (token: string): Promise<ApiResponse<null>> => {
+    return apiClient.post<ApiResponse<null>>('/api/users/auth/logout', {}, {
+      token,
+    });
   },
 
   // Get current user - GET /api/users/me (adjust if needed)
   getCurrentUser: async (): Promise<ApiResponse<UserSession>> => {
     return apiClient.get<ApiResponse<UserSession>>('/api/users/me');
+  },
+
+  // Update user profile - PUT /api/users/auth/me
+  updateProfile: async (
+    data: { name: string; email: string },
+    token?: string
+  ): Promise<ApiResponse<UserSession>> => {
+    return apiClient.put<ApiResponse<UserSession>>('/api/users/auth/me', data, { token });
+  },
+
+  forgotPassword: async (email: string): Promise<ApiResponse<null>> => {
+    return apiClient.post<ApiResponse<null>>('/api/users/auth/initial-reset-password', { email });
+  },
+
+  // Change password - POST /api/users/auth/change-password
+  changePassword: async (
+    data: { currentPassword: string; newPassword: string },
+    token?: string
+  ): Promise<ApiResponse<null>> => {
+    // Transform camelCase to snake_case for backend
+    const requestData = {
+      old_password: data.currentPassword,
+      new_password: data.newPassword,
+    };
+    return apiClient.put<ApiResponse<null>>('/api/users/auth/change-password', requestData, { token });
   },
 };
