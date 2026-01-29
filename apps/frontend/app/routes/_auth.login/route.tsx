@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { PasswordInput } from "~/components/ui/password-input";
 import { getSession, commitSession } from "~/session.server";
 import { authenticateUser, calculateSessionMaxAge } from "~/lib/auth.server";
-import type { Route } from "./+types/route";
+import type { Route } from "../_auth.login/+types/route";
 import { useForm } from "react-hook-form";
 import { loginFormSchema, type LoginFormData } from "./types";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -133,6 +133,7 @@ export default function Login() {
                         <Input
                           className="pl-10"
                           type="email"
+                          placeholder="your@email.com"
                           autoComplete="email"
                           required
                           disabled={isSubmitting}

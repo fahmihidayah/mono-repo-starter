@@ -19,11 +19,11 @@ export interface DashboardLayoutConfig {
 
 interface DashboardLayoutProps {
   user: UserSession;
-  onSignOut: () => void;
   config?: DashboardLayoutConfig;
+  signOutAction?: string;
 }
 
-export function DashboardLayout({ user, onSignOut, config = {} }: DashboardLayoutProps) {
+export function DashboardLayout({ user, signOutAction, config = {} }: DashboardLayoutProps) {
   const headerConfig = config.header || defaultHeaderConfig;
   const navigationGroups = config.navigationGroups || defaultNavigationGroups;
   const headerTitle = config.headerTitle || "Dashboard";
@@ -34,7 +34,7 @@ export function DashboardLayout({ user, onSignOut, config = {} }: DashboardLayou
       <Sidebar>
         <DashboardSidebarHeader config={headerConfig} />
         <DashboardSidebarNavigation groups={navigationGroups} />
-        <DashboardSidebarFooter user={user} onSignOut={onSignOut} />
+        <DashboardSidebarFooter user={user} signOutAction={signOutAction} />
       </Sidebar>
 
       {/* Main Content */}

@@ -1,3 +1,4 @@
+import * as logoutAction from "~/session.server";
 /**
  * Server-side Authentication Utilities
  *
@@ -6,6 +7,7 @@
  */
 
 import type { ApiResponse, AuthData, LoginCredentials, RegisterData } from './api/auth';
+import { redirect } from "react-router";
 
 /**
  * Authentication result returned by API
@@ -138,22 +140,39 @@ export function calculateSessionMaxAge(exp?: number): number {
 }
 
 /**
- * Call the Go API to logout user
- * @param token - Authentication token
+ * Logout user - destroys session and calls API logout endpoint
+ * @param request - The request object
+ * @returns Response with destroyed session cookie
  */
-export async function callLogoutApi(token: string): Promise<void> {
-  try {
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+export async function logout(request: Request): Promise<Response> {
+  const { getSession, destroySession } = logoutAction;
 
-    await fetch(`${apiBaseUrl}/api/users/auth/logout`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
-  } catch (error) {
-    // Ignore logout errors - session will still be destroyed locally
-    console.error('Logout API error:', error);
+  // Get session from request
+  const session = await getSession(request.headers.get("Cookie"));
+  const token = session.get("token");
+
+  // Call API logout endpoint if token exists
+  if (token) {
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
+      await fetch(`${apiBaseUrl}/api/users/auth/logout`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+    } catch (error) {
+      // Ignore API errors - we'll still destroy the local session
+      console.error('Logout API error:', error);
+    }
   }
+
+  // Destroy session and return redirect response
+  return redirect('/login', {
+    headers: {
+      'Set-Cookie': await destroySession(session),
+    },
+  });
 }

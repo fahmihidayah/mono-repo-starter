@@ -1,7 +1,7 @@
 import { useLoaderData } from "react-router";
 import { requireAuth } from "~/lib/auth-guard.server";
 import { DashboardLayout } from "~/components/layout/dashboard";
-import type { Route } from "./+types/dashboard";
+import type { Route } from "./+types/route";
 
 /**
  * Loader - Server-side authentication check
@@ -25,14 +25,7 @@ export default function DashboardRoute() {
         name: user.userName,
         email: user.userEmail,
       }}
-      onSignOut={() => {
-        // Use Form to submit to logout action
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/logout';
-        document.body.appendChild(form);
-        form.submit();
-      }}
+      signOutAction="/logout"
     />
   );
 }
