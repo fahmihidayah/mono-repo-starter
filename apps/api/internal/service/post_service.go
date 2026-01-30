@@ -23,7 +23,7 @@ type IPostService interface {
 	GetAllReactAdmin(ctx context.Context, limit, offset int, sortField, sortOrder string, filters map[string]interface{}) ([]domain.Post, int64, error)
 	GetByIDs(ctx context.Context, ids []string) ([]domain.Post, error)
 	UpdateMany(ctx context.Context, ids []string, updates map[string]interface{}, userID string) ([]string, error)
-	GetWithQueryParams(ctx context.Context, queryParams *utils.QueryParams) ([]domain.Post, int64, error)
+	GetWithQueryParams(ctx context.Context, queryParams *utils.QueryParams) ([]domain.Post, *utils.PaginateInfo, error)
 }
 
 type PostServiceImpl struct {
@@ -268,18 +268,17 @@ func (s *PostServiceImpl) UpdateMany(ctx context.Context, ids []string, updates 
 }
 
 // GetWithQueryParams retrieves posts with React Admin parameters
-func (s *PostServiceImpl) GetWithQueryParams(ctx context.Context, queryParams *utils.QueryParams) ([]domain.Post, int64, error) {
+func (s *PostServiceImpl) GetWithQueryParams(ctx context.Context, queryParams *utils.QueryParams) ([]domain.Post, *utils.PaginateInfo, error) {
 	count, err := s.postRepository.CountByQuery(ctx, queryParams)
 	if err != nil {
-		return nil, 0, err
+		return nil, nil, err
 	}
 
-	queryParams.FillNextPrevTotal(count)
-
+	paginateInfo := queryParams.ToPaginateInfo(count)
 	posts, err := s.postRepository.GetWithQuery(ctx, queryParams)
 	if err != nil {
-		return nil, 0, err
+		return nil, nil, err
 	}
 
-	return posts, count, nil
+	return posts, paginateInfo, nil
 }

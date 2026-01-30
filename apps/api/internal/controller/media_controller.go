@@ -63,15 +63,15 @@ func (c *MediaController) GetList(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[MediaController.GetList] Pagination - Limit: %d, Offset: %d", params.Limit, params.Offset)
 	log.Printf("[MediaController.GetList] Sort - Field: %s, Order: %s", params.Sort[0], params.Sort[1])
 
-	media, total, err := c.mediaService.GetWithQueryParams(r.Context(), params)
+	media, paginateInfo, err := c.mediaService.GetWithQueryParams(r.Context(), params)
 	if err != nil {
 		log.Printf("[MediaController.GetList] Service error: %v", err)
 		c.SendInternalError(w, err.Error())
 		return
 	}
 
-	log.Printf("[MediaController.GetList] Results - Total: %d, Media returned: %d", total, len(media))
-	c.SendListWithPagination(w, posts, params, total)
+	log.Printf("[MediaController.GetList] Results - Total: %d, Media returned: %d", paginateInfo.TotalDocs, len(media))
+	c.SendListWithPagination(w, media, paginateInfo)
 }
 
 // getMany handles React Admin getMany - GET /media?filter={"ids":[123,124,125]}

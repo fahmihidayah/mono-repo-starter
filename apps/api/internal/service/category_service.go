@@ -21,7 +21,7 @@ type ICategoryService interface {
 	Delete(ctx context.Context, id string) error
 	DeleteAll(ctx context.Context, ids []string) error
 	// React Admin specific methods
-	GetWithQueryParams(ctx context.Context, queryParams *utils.QueryParams) ([]*domain.Category, int64, error)
+	GetWithQueryParams(ctx context.Context, queryParams *utils.QueryParams) ([]*domain.Category, *utils.PaginateInfo, error)
 	GetByIDs(ctx context.Context, ids []string) ([]domain.Category, error)
 	UpdateMany(ctx context.Context, ids []string, updates map[string]interface{}) ([]string, error)
 }
@@ -143,20 +143,19 @@ func (s *CategoryServiceImpl) DeleteAll(ctx context.Context, ids []string) error
 }
 
 // GetWithQueryParams retrieves categories with React Admin parameters
-func (s *CategoryServiceImpl) GetWithQueryParams(ctx context.Context, queryParams *utils.QueryParams) ([]*domain.Category, int64, error) {
+func (s *CategoryServiceImpl) GetWithQueryParams(ctx context.Context, queryParams *utils.QueryParams) ([]*domain.Category, *utils.PaginateInfo, error) {
 	count, err := s.categoryRepository.CountByQuery(ctx, queryParams)
 	if err != nil {
-		return nil, 0, err
+		return nil, nil, err
 	}
 
-	queryParams.FillNextPrevTotal(count)
-
+	paginateInfo := queryParams.ToPaginateInfo(count)
 	categories, err := s.categoryRepository.GetWithQuery(ctx, queryParams)
 	if err != nil {
-		return nil, 0, err
+		return nil, nil, err
 	}
 
-	return categories, count, nil
+	return categories, paginateInfo, nil
 }
 
 // GetByIDs retrieves multiple categories by their IDs

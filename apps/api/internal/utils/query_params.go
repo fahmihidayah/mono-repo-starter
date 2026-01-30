@@ -8,41 +8,77 @@ import (
 	"strconv"
 )
 
-// QueryParams represents query parameters for React Admin list operations
-type QueryParams struct {
+type PaginateInfo struct {
 	Page       int
-	Sort       []string               // ["field", "order"] where order is "ASC" or "DESC"
-	Filter     map[string]interface{} // Filter conditions as map
 	Limit      int
 	Offset     int
-	NextPage   *int
-	PrevPage   *int
+	NextPage   int
+	PrevPage   int
 	TotalPages int
-	Where      map[string]string
+	TotalDocs  int64
 }
 
-func (p *QueryParams) FillNextPrevTotal(total int64) {
-	// Default to nil
-	p.NextPage = nil
-	p.PrevPage = nil
+// QueryParams represents query parameters for React Admin list operations
+type QueryParams struct {
+	Page   int
+	Sort   []string               // ["field", "order"] where order is "ASC" or "DESC"
+	Filter map[string]interface{} // Filter conditions as map
+	Limit  int
+	Offset int
+	Where  map[string]string
+}
+
+func (p *QueryParams) ToPaginateInfo(total int64) *PaginateInfo {
+
+	paginateInfo := &PaginateInfo{
+		Page:      p.Page,
+		Limit:     p.Limit,
+		Offset:    p.Offset,
+		TotalDocs: total,
+	}
 
 	// Prev page
-	if p.Page > 1 {
+	if paginateInfo.Page > 1 {
 		prev := p.Page - 1
-		p.PrevPage = &prev
+		paginateInfo.PrevPage = prev
 	}
 
 	// Next page
-	if p.Offset+p.Limit < int(total) {
+	if paginateInfo.Offset+paginateInfo.Limit < int(total) {
 		next := p.Page + 1
-		p.NextPage = &next
+		paginateInfo.NextPage = next
 	}
 
-	p.TotalPages = int(total / int64(p.Limit))
-	if total%int64(p.Limit) != 0 {
-		p.TotalPages++
+	paginateInfo.TotalPages = int(total / int64(paginateInfo.Limit))
+	if total%int64(paginateInfo.Limit) != 0 {
+		paginateInfo.TotalPages++
 	}
+
+	return paginateInfo
 }
+
+// func (p *QueryParams) FillNextPrevTotal(total int64) {
+// 	// Default to nil
+// 	p.NextPage = nil
+// 	p.PrevPage = nil
+
+// 	// Prev page
+// 	if p.Page > 1 {
+// 		prev := p.Page - 1
+// 		p.PrevPage = &prev
+// 	}
+
+// 	// Next page
+// 	if p.Offset+p.Limit < int(total) {
+// 		next := p.Page + 1
+// 		p.NextPage = &next
+// 	}
+
+// 	p.TotalPages = int(total / int64(p.Limit))
+// 	if total%int64(p.Limit) != 0 {
+// 		p.TotalPages++
+// 	}
+// }
 
 // ParseQueryListParams parses React Admin query parameters from the request
 // React Admin sends: sort=["title","ASC"]&range=[0,24]&filter={"author_id":12}

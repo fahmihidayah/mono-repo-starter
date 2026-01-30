@@ -38,7 +38,7 @@ type IUserService interface {
 	// React Admin specific methods
 	GetAllReactAdmin(ctx context.Context, limit, offset int, sortField, sortOrder string, filters map[string]interface{}) ([]domain.User, int64, error)
 	GetByIDs(ctx context.Context, ids []string) ([]domain.User, error)
-	GetWithQueryParams(ctx context.Context, queryParams *utils.QueryParams) ([]domain.User, int64, error)
+	GetWithQueryParams(ctx context.Context, queryParams *utils.QueryParams) ([]domain.User, *utils.PaginateInfo, error)
 	ChangePassword(ctx context.Context, req *request.ChangePasswordRequest) error
 }
 
@@ -494,20 +494,19 @@ func (s *UserServiceImpl) GetByIDs(ctx context.Context, ids []string) ([]domain.
 }
 
 // GetWithQueryParams retrieves users with React Admin parameters
-func (s *UserServiceImpl) GetWithQueryParams(ctx context.Context, queryParams *utils.QueryParams) ([]domain.User, int64, error) {
+func (s *UserServiceImpl) GetWithQueryParams(ctx context.Context, queryParams *utils.QueryParams) ([]domain.User, *utils.PaginateInfo, error) {
 	count, err := s.userRepository.CountByQuery(ctx, queryParams)
 	if err != nil {
-		return nil, 0, err
+		return nil, nil, err
 	}
 
-	queryParams.FillNextPrevTotal(count)
-
+	paginateInfo := queryParams.ToPaginateInfo(count)
 	users, err := s.userRepository.GetWithQuery(ctx, queryParams)
 	if err != nil {
-		return nil, 0, err
+		return nil, nil, err
 	}
 
-	return users, count, nil
+	return users, paginateInfo, nil
 }
 
 func (s *UserServiceImpl) ChangePassword(ctx context.Context, req *request.ChangePasswordRequest) error {

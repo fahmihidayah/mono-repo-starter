@@ -26,7 +26,7 @@ type IMediaService interface {
 	GetAllReactAdmin(ctx context.Context, limit, offset int, sortField, sortOrder string, filters map[string]interface{}) ([]domain.Media, int64, error)
 	GetByIDs(ctx context.Context, ids []string) ([]domain.Media, error)
 	UpdateMany(ctx context.Context, ids []string, updates map[string]interface{}) ([]string, error)
-	GetWithQueryParams(ctx context.Context, queryParams *utils.QueryParams) ([]domain.Media, int64, error)
+	GetWithQueryParams(ctx context.Context, queryParams *utils.QueryParams) ([]domain.Media, *utils.PaginateInfo, error)
 }
 
 type MediaServiceImpl struct {
@@ -249,18 +249,18 @@ func (s *MediaServiceImpl) UpdateMany(ctx context.Context, ids []string, updates
 }
 
 // GetWithQueryParams retrieves media with React Admin parameters
-func (s *MediaServiceImpl) GetWithQueryParams(ctx context.Context, queryParams *utils.QueryParams) ([]domain.Media, int64, error) {
+func (s *MediaServiceImpl) GetWithQueryParams(ctx context.Context, queryParams *utils.QueryParams) ([]domain.Media, *utils.PaginateInfo, error) {
 	count, err := s.mediaRepository.CountByQuery(ctx, queryParams)
 	if err != nil {
-		return nil, 0, err
+		return nil, nil, err
 	}
 
-	queryParams.FillNextPrevTotal(count)
+	paginateInfo := queryParams.ToPaginateInfo(count)
 
 	media, err := s.mediaRepository.GetWithQuery(ctx, queryParams)
 	if err != nil {
-		return nil, 0, err
+		return nil, nil, err
 	}
 
-	return media, count, nil
+	return media, paginateInfo, nil
 }

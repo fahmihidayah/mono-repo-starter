@@ -61,15 +61,15 @@ func (c *CategoryController) GetList(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[CategoryController.GetList] Pagination - Limit: %d, Offset: %d", params.Limit, params.Offset)
 	log.Printf("[CategoryController.GetList] Sort - Field: %s, Order: %s", params.Sort[0], params.Sort[1])
 
-	categories, total, err := c.categoryService.GetWithQueryParams(r.Context(), params)
+	categories, paginateInfo, err := c.categoryService.GetWithQueryParams(r.Context(), params)
 	if err != nil {
 		log.Printf("[CategoryController.GetList] Service error: %v", err)
 		c.SendInternalError(w, err.Error())
 		return
 	}
 
-	log.Printf("[CategoryController.GetList] Results - Total: %d, Categories returned: %d", total, len(categories))
-	c.SendListWithPagination(w, categories, params, total)
+	log.Printf("[CategoryController.GetList] Results - Total: %d, Categories returned: %d", paginateInfo.TotalDocs, len(categories))
+	c.SendListWithPagination(w, categories, paginateInfo)
 }
 
 // getMany handles React Admin getMany - GET /categories?filter={"ids":[123,124,125]}

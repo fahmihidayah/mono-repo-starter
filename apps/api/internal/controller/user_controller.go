@@ -62,15 +62,15 @@ func (c *UserController) GetList(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[UserController.GetList] Pagination - Limit: %d, Offset: %d", params.Limit, params.Offset)
 	log.Printf("[UserController.GetList] Sort - Field: %s, Order: %s", params.Sort[0], params.Sort[1])
 
-	users, total, err := c.userService.GetWithQueryParams(r.Context(), params)
+	users, paginateInfo, err := c.userService.GetWithQueryParams(r.Context(), params)
 	if err != nil {
 		log.Printf("[UserController.GetList] Service error: %v", err)
 		c.SendInternalError(w, err.Error())
 		return
 	}
 
-	log.Printf("[UserController.GetList] Results - Total: %d, Users returned: %d", total, len(users))
-	c.SendListWithPagination(w, users, params, total)
+	log.Printf("[UserController.GetList] Results - Total: %d, Users returned: %d", paginateInfo.TotalDocs, len(users))
+	c.SendListWithPagination(w, users, paginateInfo)
 }
 
 // getMany handles React Admin getMany - GET /users?filter={"ids":[123,124,125]}
