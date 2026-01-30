@@ -144,12 +144,14 @@ func (s *CategoryServiceImpl) DeleteAll(ctx context.Context, ids []string) error
 
 // GetWithQueryParams retrieves categories with React Admin parameters
 func (s *CategoryServiceImpl) GetWithQueryParams(ctx context.Context, queryParams *utils.QueryParams) ([]*domain.Category, int64, error) {
-	categories, err := s.categoryRepository.GetWithQuery(ctx, queryParams)
+	count, err := s.categoryRepository.CountByQuery(ctx, queryParams)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	count, err := s.categoryRepository.CountByQuery(ctx, queryParams)
+	queryParams.FillNextPrevTotal(count)
+
+	categories, err := s.categoryRepository.GetWithQuery(ctx, queryParams)
 	if err != nil {
 		return nil, 0, err
 	}

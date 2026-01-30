@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { requireAuth } from "~/lib/auth-guard.server";
 import { DashboardLayout } from "~/components/layout/dashboard";
 import type { Route } from "./+types/route";
-import { Home, List, Settings } from "lucide-react";
+import { FileText, FolderTree, Home, List, Settings, User, Users } from "lucide-react";
 import * as serverSession from "~/session.server";
 
 /**
@@ -65,9 +65,20 @@ export default function DashboardRoute() {
                 icon: Home,
               },
               {
+                title: "Users",
+                url: "/dashboard/users",
+                icon: Users,
+              },
+              {
+                title : "Categories",
+                url : "/dashboard/categories",
+                icon : FolderTree,
+
+              },
+              {
                 title: "Post",
                 url: "/dashboard/posts",
-                icon: List,
+                icon: FileText,
               },
             ],
           },

@@ -495,12 +495,14 @@ func (s *UserServiceImpl) GetByIDs(ctx context.Context, ids []string) ([]domain.
 
 // GetWithQueryParams retrieves users with React Admin parameters
 func (s *UserServiceImpl) GetWithQueryParams(ctx context.Context, queryParams *utils.QueryParams) ([]domain.User, int64, error) {
-	users, err := s.userRepository.GetWithQuery(ctx, queryParams)
+	count, err := s.userRepository.CountByQuery(ctx, queryParams)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	count, err := s.userRepository.CountByQuery(ctx, queryParams)
+	queryParams.FillNextPrevTotal(count)
+
+	users, err := s.userRepository.GetWithQuery(ctx, queryParams)
 	if err != nil {
 		return nil, 0, err
 	}

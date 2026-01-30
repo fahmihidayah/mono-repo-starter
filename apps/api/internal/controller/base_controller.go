@@ -31,6 +31,19 @@ func (bc *BaseController) SendList(w http.ResponseWriter, data interface{}, tota
 	utils.SendReactAdminList(w, data, total)
 }
 
+func (bc *BaseController) SendListWithPagination(w http.ResponseWriter, data interface{}, params *utils.QueryParams, total int64) {
+	utils.SendReactAdminList(w,
+		&map[string]interface{}{
+			"doc":        data,
+			"limit":      params.Limit,
+			"page":       params.Page,
+			"totalPages": params.TotalPages,
+			"nextPage":   params.NextPage,
+			"prevPage":   params.PrevPage,
+			"totalDocs":  total,
+		}, total)
+}
+
 // SendOne sends a single record response
 func (bc *BaseController) SendOne(w http.ResponseWriter, data interface{}) {
 	utils.SendReactAdminOne(w, data)

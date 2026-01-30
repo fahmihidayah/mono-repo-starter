@@ -69,7 +69,7 @@ func (c *CategoryController) GetList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("[CategoryController.GetList] Results - Total: %d, Categories returned: %d", total, len(categories))
-	c.SendList(w, categories, total)
+	c.SendListWithPagination(w, categories, params, total)
 }
 
 // getMany handles React Admin getMany - GET /categories?filter={"ids":[123,124,125]}

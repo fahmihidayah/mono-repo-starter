@@ -70,7 +70,7 @@ func (c *UserController) GetList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("[UserController.GetList] Results - Total: %d, Users returned: %d", total, len(users))
-	c.SendList(w, users, total)
+	c.SendListWithPagination(w, users, params, total)
 }
 
 // getMany handles React Admin getMany - GET /users?filter={"ids":[123,124,125]}

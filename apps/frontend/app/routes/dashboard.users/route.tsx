@@ -4,9 +4,10 @@ import { taskRepository } from "~/features/tasks/task-repository";
 import { toast } from "sonner";
 import { PageHeader, DataTable, TablePagination, DeleteDialog } from "~/components/layout/table/table-list";
 import createColumn from "~/components/layout/table/column/create-column";
-import type { Route } from "./+types/dashboard.tasks";
+import type { Route } from "../+types/dashboard.tasks";
 import type { User } from "~/features/users/type";
 import { userRepository } from "~/features/users/user-repository";
+import { userApi } from "~/lib/api/users";
 
 // Loader - Fetch users with pagination and search using UserRepository
 export async function loader({ request }: Route.LoaderArgs) {
@@ -16,10 +17,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   const search = url.searchParams.get("search") || "";
 
   // Use repository's findManyPaginated method
-  const result = await userRepository.findManyPaginated({
-    page,
-    pageSize,
-  });
+  const result = await userApi.getAll(page, pageSize);
 
   return {
     tasks: result.data,

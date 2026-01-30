@@ -71,7 +71,7 @@ func (c *MediaController) GetList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("[MediaController.GetList] Results - Total: %d, Media returned: %d", total, len(media))
-	c.SendList(w, media, total)
+	c.SendListWithPagination(w, posts, params, total)
 }
 
 // getMany handles React Admin getMany - GET /media?filter={"ids":[123,124,125]}

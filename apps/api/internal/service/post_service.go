@@ -269,12 +269,14 @@ func (s *PostServiceImpl) UpdateMany(ctx context.Context, ids []string, updates 
 
 // GetWithQueryParams retrieves posts with React Admin parameters
 func (s *PostServiceImpl) GetWithQueryParams(ctx context.Context, queryParams *utils.QueryParams) ([]domain.Post, int64, error) {
-	posts, err := s.postRepository.GetWithQuery(ctx, queryParams)
+	count, err := s.postRepository.CountByQuery(ctx, queryParams)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	count, err := s.postRepository.CountByQuery(ctx, queryParams)
+	queryParams.FillNextPrevTotal(count)
+
+	posts, err := s.postRepository.GetWithQuery(ctx, queryParams)
 	if err != nil {
 		return nil, 0, err
 	}

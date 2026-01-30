@@ -250,12 +250,14 @@ func (s *MediaServiceImpl) UpdateMany(ctx context.Context, ids []string, updates
 
 // GetWithQueryParams retrieves media with React Admin parameters
 func (s *MediaServiceImpl) GetWithQueryParams(ctx context.Context, queryParams *utils.QueryParams) ([]domain.Media, int64, error) {
-	media, err := s.mediaRepository.GetWithQuery(ctx, queryParams)
+	count, err := s.mediaRepository.CountByQuery(ctx, queryParams)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	count, err := s.mediaRepository.CountByQuery(ctx, queryParams)
+	queryParams.FillNextPrevTotal(count)
+
+	media, err := s.mediaRepository.GetWithQuery(ctx, queryParams)
 	if err != nil {
 		return nil, 0, err
 	}

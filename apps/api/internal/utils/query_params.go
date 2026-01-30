@@ -10,12 +10,38 @@ import (
 
 // QueryParams represents query parameters for React Admin list operations
 type QueryParams struct {
-	Sort   []string               // ["field", "order"] where order is "ASC" or "DESC"
-	Range  []int                  // [start, end] for pagination (0-indexed, inclusive)
-	Filter map[string]interface{} // Filter conditions as map
-	Limit  int
-	Offset int
-	Where  map[string]string
+	Page       int
+	Sort       []string               // ["field", "order"] where order is "ASC" or "DESC"
+	Filter     map[string]interface{} // Filter conditions as map
+	Limit      int
+	Offset     int
+	NextPage   *int
+	PrevPage   *int
+	TotalPages int
+	Where      map[string]string
+}
+
+func (p *QueryParams) FillNextPrevTotal(total int64) {
+	// Default to nil
+	p.NextPage = nil
+	p.PrevPage = nil
+
+	// Prev page
+	if p.Page > 1 {
+		prev := p.Page - 1
+		p.PrevPage = &prev
+	}
+
+	// Next page
+	if p.Offset+p.Limit < int(total) {
+		next := p.Page + 1
+		p.NextPage = &next
+	}
+
+	p.TotalPages = int(total / int64(p.Limit))
+	if total%int64(p.Limit) != 0 {
+		p.TotalPages++
+	}
 }
 
 // ParseQueryListParams parses React Admin query parameters from the request
@@ -23,7 +49,8 @@ type QueryParams struct {
 func ParseQueryListParams(r *http.Request) (*QueryParams, error) {
 	params := &QueryParams{
 		Sort:   []string{"id", "ASC"},
-		Range:  []int{0, 24},
+		Page:   1,
+		Limit:  10,
 		Filter: make(map[string]interface{}),
 	}
 
@@ -37,18 +64,32 @@ func ParseQueryListParams(r *http.Request) (*QueryParams, error) {
 		}
 	}
 
-	// Parse range parameter
-	if rangeStr := r.URL.Query().Get("range"); rangeStr != "" {
-		if err := json.Unmarshal([]byte(rangeStr), &params.Range); err != nil {
-			return nil, fmt.Errorf("invalid range parameter: %w", err)
-		}
-		if len(params.Range) != 2 {
-			return nil, fmt.Errorf("range parameter must have exactly 2 elements")
+	if pageStr := r.URL.Query().Get("page"); pageStr != "" {
+		if val, err := strconv.Atoi(pageStr); err == nil {
+			params.Page = val
 		}
 	}
-	limit, offset := params.CalculatePagination()
-	params.Limit = limit
-	params.Offset = offset
+
+	if limitStr := r.URL.Query().Get("limit"); limitStr != "" {
+		if val, err := strconv.Atoi(limitStr); err == nil {
+			params.Limit = val
+		}
+	}
+
+	params.Offset = (params.Page - 1) * params.Limit
+
+	// Parse range parameter
+	// if rangeStr := r.URL.Query().Get("range"); rangeStr != "" {
+	// 	if err := json.Unmarshal([]byte(rangeStr), &params.Range); err != nil {
+	// 		return nil, fmt.Errorf("invalid range parameter: %w", err)
+	// 	}
+	// 	if len(params.Range) != 2 {
+	// 		return nil, fmt.Errorf("range parameter must have exactly 2 elements")
+	// 	}
+	// }
+	// limit, offset := params.CalculatePagination()
+	// params.Limit = limit
+	// params.Offset = offset
 	// Parse filter parameter
 	if filterStr := r.URL.Query().Get("filter"); filterStr != "" {
 		if err := json.Unmarshal([]byte(filterStr), &params.Filter); err != nil {
@@ -67,11 +108,11 @@ func ParseQueryListParams(r *http.Request) (*QueryParams, error) {
 }
 
 // CalculatePagination calculates limit and offset from React Admin range
-func (p *QueryParams) CalculatePagination() (limit, offset int) {
-	offset = p.Range[0]
-	limit = p.Range[1] - p.Range[0] + 1
-	return
-}
+// func (p *QueryParams) CalculatePagination() (limit, offset int) {
+// 	offset = p.Range[0]
+// 	limit = p.Range[1] - p.Range[0] + 1
+// 	return
+// }
 
 // GetSortField returns the field to sort by
 func (p *QueryParams) GetSortField() string {

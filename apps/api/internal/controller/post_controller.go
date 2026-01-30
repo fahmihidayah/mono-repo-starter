@@ -71,7 +71,7 @@ func (c *PostController) GetList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("[PostController.GetList] Results - Total: %d, Posts returned: %d", total, len(posts))
-	c.SendList(w, posts, total)
+	c.SendListWithPagination(w, posts, params, total)
 }
 
 // getMany handles React Admin getMany - GET /posts?filter={"ids":[123,124,125]}
