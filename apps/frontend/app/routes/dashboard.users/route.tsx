@@ -12,8 +12,8 @@ import { userApi } from "~/lib/api/users";
 // Loader - Fetch users with pagination and search using UserRepository
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
-  const page =  Number.parseInt(url.searchParams.get("page") || "1");
-  const pageSize =  Number.parseInt(url.searchParams.get("pageSize") || "10");
+  const page = Number.parseInt(url.searchParams.get("page") || "1");
+  const pageSize = Number.parseInt(url.searchParams.get("limit") || "10");
   const search = url.searchParams.get("search") || "";
 
   // Use repository's findManyPaginated method
@@ -71,7 +71,7 @@ export function meta() {
 export default function DashboardTasksPage() {
   const loaderData = useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
-  
+
   const submit = useSubmit();
 
   // State
@@ -108,7 +108,7 @@ export default function DashboardTasksPage() {
     ],
     actionColumnConfig: {
       getItemId: (user) => user.id,
-      onCopyId: () => {},
+      onCopyId: () => { },
       onEdit: (user) => navigate(`${user.id}`),
       onDelete: (user) => setDeletingTask(user),
     }
