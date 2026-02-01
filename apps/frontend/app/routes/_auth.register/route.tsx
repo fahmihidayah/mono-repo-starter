@@ -19,7 +19,7 @@ import {
 import { Lock, Mail, User } from "lucide-react";
 import type { ActionData } from "~/types";
 import { authApi } from "~/lib/api/auth";
-import { calculateSessionMaxAge } from "~/lib/utils";
+import { calculateSessionMaxAge } from "~/lib/utils.server";
 
 // Meta function for SEO
 export function meta() {

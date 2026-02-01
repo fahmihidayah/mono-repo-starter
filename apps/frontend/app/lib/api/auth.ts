@@ -1,4 +1,5 @@
-import { apiClient } from '../api-client';
+import type { BaseResponse } from '~/types';
+import { ApiClient, apiClient } from '../api-client';
 
 export interface LoginCredentials {
   email: string;
@@ -11,20 +12,13 @@ export interface RegisterData {
   password: string;
 }
 
-// API Response structure matching your Go API
-export interface ApiResponse<T> {
-  code: number;
-  message: string;
-  data: T;
-}
-
 // Auth data structure from your API
 export interface AuthData {
   id: string;
   name: string;
   email: string;
   token: string;
-  exp : number;
+  exp: number;
   created_at: string;
 }
 
@@ -36,51 +30,101 @@ export interface UserSession {
   createdAt: string;
 }
 
-export const authApi = {
-  // Login - POST /api/users/auth/login
-  login: async (credentials: LoginCredentials): Promise<ApiResponse<AuthData>> => {
-    return apiClient.post<ApiResponse<AuthData>>('/api/users/auth/login', credentials);
-  },
 
-  // Register - POST /api/users/auth/register
-  register: async (data: RegisterData): Promise<ApiResponse<AuthData>> => {
-    return apiClient.post<ApiResponse<AuthData>>('/api/users/auth/register', data);
-  },
+//  {
+//   // Login - POST /api/users/auth/login
+//   login: async (credentials: LoginCredentials): Promise<BaseResponse<AuthData>> => {
+//     return apiClient.post<AuthData>('/api/users/auth/login', credentials);
+//   },
 
-  // Logout - POST /api/users/auth/logout
-  logout: async (token: string): Promise<ApiResponse<null>> => {
-    return apiClient.post<ApiResponse<null>>('/api/users/auth/logout', {}, {
-      token,
+//   // Register - POST /api/users/auth/register
+//   register: async (data: RegisterData): Promise<BaseResponse<AuthData>> => {
+//     return apiClient.post<AuthData>('/api/users/auth/register', data);
+//   },
+
+//   // Logout - POST /api/users/auth/logout
+//   logout: async (token: string): Promise<BaseResponse<null>> => {
+//     return apiClient.post<null>('/api/users/auth/logout', {}, {
+//       token,
+//     });
+//   },
+
+//   // Get current user - GET /api/users/me (adjust if needed)
+//   getCurrentUser: async (): Promise<BaseResponse<UserSession>> => {
+//     return apiClient.get<UserSession>('/api/users/me');
+//   },
+
+//   // Update user profile - PUT /api/users/auth/me
+//   updateProfile: async (
+//     data: { name: string; email: string },
+//     token?: string
+//   ): Promise<BaseResponse<UserSession>> => {
+//     return apiClient.put<UserSession>('/api/users/auth/me', data, { token });
+//   },
+
+//   forgotPassword: async (email: string): Promise<BaseResponse<null>> => {
+//     return apiClient.post<null>('/api/users/auth/initial-reset-password', { email });
+//   },
+
+//   // Change password - POST /api/users/auth/change-password
+//   changePassword: async (
+//     data: { currentPassword: string; newPassword: string },
+//     token?: string
+//   ): Promise<BaseResponse<null>> => {
+//     // Transform camelCase to snake_case for backend
+//     const requestData = {
+//       old_password: data.currentPassword,
+//       new_password: data.newPassword,
+//     };
+//     return apiClient.put<null>('/api/users/auth/change-password', requestData, { token });
+//   },
+// };
+
+export class AuthApi extends ApiClient<AuthData> {
+  constructor() {
+    super({
+      resource: "api/users/auth",
     });
-  },
+  }
 
-  // Get current user - GET /api/users/me (adjust if needed)
-  getCurrentUser: async (): Promise<ApiResponse<UserSession>> => {
-    return apiClient.get<ApiResponse<UserSession>>('/api/users/me');
-  },
+  async login(data: LoginCredentials): Promise<BaseResponse<AuthData>> {
+    return this.post("/login", data);
+  }
 
-  // Update user profile - PUT /api/users/auth/me
-  updateProfile: async (
+  async register(data: RegisterData): Promise<BaseResponse<AuthData>> {
+    return this.post("/register", data);
+  }
+
+  async logout(token: string): Promise<BaseResponse<null>> {
+    return this.post("/logout", {}, { token });
+  }
+
+  async getCurrentUser(): Promise<BaseResponse<UserSession>> {
+    return this.get("/me");
+  }
+
+  async updateProfile(
     data: { name: string; email: string },
     token?: string
-  ): Promise<ApiResponse<UserSession>> => {
-    return apiClient.put<ApiResponse<UserSession>>('/api/users/auth/me', data, { token });
-  },
+  ): Promise<BaseResponse<UserSession>> {
+    return this.put("/me", data, { token });
+  }
 
-  forgotPassword: async (email: string): Promise<ApiResponse<null>> => {
-    return apiClient.post<ApiResponse<null>>('/api/users/auth/initial-reset-password', { email });
-  },
+  async forgotPassword(email: string): Promise<BaseResponse<null>> {
+    return this.post("/initial-reset-password", { email });
+  }
 
-  // Change password - POST /api/users/auth/change-password
-  changePassword: async (
+  async changePassword(
     data: { currentPassword: string; newPassword: string },
     token?: string
-  ): Promise<ApiResponse<null>> => {
+  ): Promise<BaseResponse<null>> {
     // Transform camelCase to snake_case for backend
     const requestData = {
       old_password: data.currentPassword,
       new_password: data.newPassword,
     };
-    return apiClient.put<ApiResponse<null>>('/api/users/auth/change-password', requestData, { token });
-  },
-};
+    return this.put("/change-password", requestData, { token });
+  }
+}
+
+export const authApi = new AuthApi();

@@ -244,18 +244,15 @@ func SendReactAdminOne(w http.ResponseWriter, data interface{}) {
 }
 
 // SendReactAdminIDs sends an array of IDs (for updateMany/deleteMany)
-func SendReactAdminIDs(w http.ResponseWriter, ids []string) {
+func SendReactAdminIDs(w http.ResponseWriter, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(ids)
+	json.NewEncoder(w).Encode(data)
 }
 
 // SendReactAdminError sends an error response
-func SendReactAdminError(w http.ResponseWriter, message string, status int) {
+func SendReactAdminError(w http.ResponseWriter, data interface{}, status int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"message": message,
-		"status":  status,
-	})
+	json.NewEncoder(w).Encode(data)
 }

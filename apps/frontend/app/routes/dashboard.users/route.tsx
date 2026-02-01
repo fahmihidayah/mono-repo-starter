@@ -8,6 +8,7 @@ import type { Route } from "../+types/dashboard.tasks";
 import type { User } from "~/features/users/type";
 import { userRepository } from "~/features/users/user-repository";
 import { userApi } from "~/lib/api/users";
+import type { BaseResponse } from "~/types";
 
 // Loader - Fetch users with pagination and search using UserRepository
 export async function loader({ request }: Route.LoaderArgs) {
@@ -17,15 +18,13 @@ export async function loader({ request }: Route.LoaderArgs) {
   const search = url.searchParams.get("search") || "";
 
   // Use repository's findManyPaginated method
-  const result = await userApi.getAll(page, pageSize);
+  const result = await userApi.getAll({
+    request,
+    page,
+    pageSize,
+  });
 
-  return {
-    tasks: result.data,
-    totalCount: result.pagination.totalItems,
-    page: result.pagination.currentPage,
-    pageSize: result.pagination.pageSize,
-    totalPages: result.pagination.totalPages,
-  };
+  return result
 }
 
 // Action - Handle delete and update operations using TaskRepository
@@ -34,7 +33,6 @@ export async function action({ request }: Route.ActionArgs) {
   const intent = formData.get("intent");
   const taskId = formData.get("taskId")?.toString();
 
-  console.log("user id : ", intent, taskId)
   try {
     if (intent === "delete" && taskId) {
       await userRepository.delete(taskId);
@@ -161,22 +159,22 @@ export default function DashboardTasksPage() {
         {/* Data Table */}
         <DataTable
           title="All Users"
-          description={`${loaderData.totalCount} task${loaderData.totalCount !== 1 ? "s" : ""} total`}
-          data={loaderData.tasks}
+          description={`${loaderData.pagination?.totalDocs} task${loaderData.pagination?.totalDocs !== 1 ? "s" : ""} total`}
+          data={loaderData.data ?? []}
           columns={columns}
           searchPlaceholder="Search users..."
           searchValue={searchValue}
           onSearchChange={handleSearch}
           emptyMessage="No tasks found."
-          totalPages={loaderData.totalPages}
+          totalPages={loaderData.pagination?.totalPages ?? 0}
           manualPagination
         />
 
         {/* Table Pagination */}
-        {loaderData.totalPages > 1 && (
+        {(loaderData.pagination?.totalPages ?? 0) > 1 && (
           <TablePagination
-            currentPage={loaderData.page}
-            totalPages={loaderData.totalPages}
+            currentPage={loaderData.pagination?.page ?? 1}
+            totalPages={loaderData.pagination?.totalPages ?? 0}
             onPageChange={handlePageChange}
           />
         )}

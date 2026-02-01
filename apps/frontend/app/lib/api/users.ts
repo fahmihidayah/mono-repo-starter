@@ -1,4 +1,7 @@
-import { apiClient } from '../api-client';
+import type { BaseResponse } from '~/types';
+import { ApiClient, apiClient } from '../api-client';
+import type { ApiProps } from '../type';
+import { getToken } from '../utils.server';
 
 export interface User {
   id: string;
@@ -10,38 +13,42 @@ export interface User {
   updatedAt: Date;
 }
 
-export interface PaginatedResponse<T> {
-  data: T[];
-  pagination: {
-    currentPage: number;
-    pageSize: number;
-    totalItems: number;
-    totalPages: number;
-    hasNextPage: boolean;
-    hasPrevPage: boolean;
-    nextPage: number | null;
-    prevPage: number | null;
-  };
-}
 
-export const userApi = {
-  getAll: async (page = 1, pageSize = 10): Promise<PaginatedResponse<User>> => {
-    return apiClient.get<PaginatedResponse<User>>(`/users?page=${page}&pageSize=${pageSize}`);
-  },
+export const userApi = new ApiClient<User>({
+  resource: "api/users",
+  defaultToken: ""
+});
 
-  getById: async (id: string): Promise<User> => {
-    return apiClient.get<User>(`/users/${id}`);
-  },
+// {
+//   getAll: async ({ request, page = 1, pageSize = 10 }: ApiProps & {
+//     page?: number;
+//     pageSize?: number;
+//   }): Promise<BaseResponse<User[]>> => {
+//     const token = await getToken({ request: request });
+//     return apiClient.get<User[]>(`/api/users?page=${page}&pageSize=${pageSize}`, { token });
+//   },
 
-  create: async (data: Partial<User>): Promise<User> => {
-    return apiClient.post<User>('/users', data);
-  },
+//   getById: async ({ request, id }: ApiProps & {
+//     id: string
+//   }): Promise<BaseResponse<User>> => {
+//     const token = await getToken({ request: request });
+//     return apiClient.get<User>(`/api/users/${id}`, { token });
+//   },
 
-  update: async (id: string, data: Partial<User>): Promise<User> => {
-    return apiClient.put<User>(`/users/${id}`, data);
-  },
+//   create: async ({
+//     data, request
+//   }: ApiProps & { data: Partial<User> }): Promise<BaseResponse<User>> => {
+//     const token = await getToken({ request: request });
+//     return apiClient.post<User>('/api/users', data, { token });
+//   },
 
-  delete: async (id: string): Promise<void> => {
-    return apiClient.delete<void>(`/users/${id}`);
-  },
-};
+//   update: async ({ request, data, id }: ApiProps & { data: Partial<User>, id: string }): Promise<BaseResponse<User>> => {
+//     const token = await getToken({ request: request });
+//     return apiClient.put<User>(`/api/users/${id}`, data, { token });
+//   },
+
+//   delete: async ({ request, id }: ApiProps & { id: string }): Promise<BaseResponse<null>> => {
+//     const token = await getToken({ request: request });
+//     return apiClient.delete<null>(`/api/users/${id}`, { token });
+//   },
+// };
