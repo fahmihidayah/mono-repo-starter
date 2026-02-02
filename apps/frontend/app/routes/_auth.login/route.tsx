@@ -62,13 +62,13 @@ export async function action({ request }: Route.ActionArgs) {
       success: false,
       errors: {
         general: result.message || "Invalid email or password. Please try again.",
-      } 
-    } as ActionData; 
+      }
+    } as ActionData;
   }
 
   // Create session with auth data
   const session = await getSession(request.headers.get("Cookie"));
-  const { token, id, name, email, exp } = result.data ;
+  const { token, id, name, email, exp } = result.data;
 
   session.set("userId", id);
   session.set("token", token);

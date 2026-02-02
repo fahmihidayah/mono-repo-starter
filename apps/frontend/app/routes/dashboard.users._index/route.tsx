@@ -1,17 +1,12 @@
 import { useState } from "react";
-import { useLoaderData, useNavigate, useSearchParams, useSubmit } from "react-router";
-import { taskRepository } from "~/features/tasks/task-repository";
-import { toast } from "sonner";
-import { PageHeader, DataTable, TablePagination, DeleteDialog } from "~/components/layout/table/table-list";
+import { useLoaderData, useSearchParams } from "react-router";
+import { PageHeader, DataTable, TablePagination } from "~/components/layout/table/table-list";
 import createColumn from "~/components/layout/table/column/create-column";
-import type { Route } from "../+types/dashboard.tasks";
 import type { User } from "~/features/users/type";
-import { userRepository } from "~/features/users/user-repository";
 import { userApi } from "~/lib/api/users";
-import type { BaseResponse } from "~/types";
 
 // Loader - Fetch users with pagination and search using UserRepository
-export async function loader({ request }: Route.LoaderArgs) {
+export async function loader({ request }: { request: Request }) {
   const url = new URL(request.url);
   const page = Number.parseInt(url.searchParams.get("page") || "1");
   const pageSize = Number.parseInt(url.searchParams.get("limit") || "10");
@@ -22,36 +17,26 @@ export async function loader({ request }: Route.LoaderArgs) {
     request,
     page,
     pageSize,
+    search: { email: search }
   });
 
   return result
 }
 
-// Action - Handle delete and update operations using TaskRepository
-export async function action({ request }: Route.ActionArgs) {
+// Action - Handle delete and update operations
+export async function action({ request }: { request: Request }) {
   const formData = await request.formData();
   const intent = formData.get("intent");
-  const taskId = formData.get("taskId")?.toString();
+  const id = formData.get("id")?.toString();
 
   try {
-    if (intent === "delete" && taskId) {
-      await userRepository.delete(taskId);
-      return { success: true, message: "Task deleted successfully" };
-    }
-
-    if (intent === "update" && taskId) {
-      const title = formData.get("title")?.toString();
-      const description = formData.get("description")?.toString();
-
-      await taskRepository.update(taskId, {
-        title,
-        description,
-        updatedAt: new Date(),
+    if (intent === "delete" && id) {
+      await userApi.deleteById({
+        request,
+        id,
       });
-
-      return { success: true, message: "Task updated successfully" };
+      return { success: true, message: "User deleted successfully" };
     }
-
     return { success: false, message: "Invalid action" };
   } catch (error) {
     console.error("Action error:", error);
@@ -70,12 +55,8 @@ export default function DashboardTasksPage() {
   const loaderData = useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const submit = useSubmit();
-
   // State
   const [searchValue, setSearchValue] = useState(searchParams.get("search") || "");
-  const [deletingTask, setDeletingTask] = useState<User | null>(null);
-  const navigate = useNavigate()
 
   // Table columns
   const columns = createColumn<User>({
@@ -106,9 +87,8 @@ export default function DashboardTasksPage() {
     ],
     actionColumnConfig: {
       getItemId: (user) => user.id,
-      onCopyId: () => { },
-      onEdit: (user) => navigate(`${user.id}`),
-      onDelete: (user) => setDeletingTask(user),
+      editLink: (user) => `/dashboard/users/${user.id}`,
+      deleteFormAction: "/dashboard/users",
     }
   });
 
@@ -130,19 +110,6 @@ export default function DashboardTasksPage() {
     const params = new URLSearchParams(searchParams);
     params.set("page", newPage.toString());
     setSearchParams(params);
-  };
-
-  // Handle delete
-  const handleDelete = () => {
-    if (!deletingTask) return;
-
-    const formData = new FormData();
-    formData.append("intent", "delete");
-    formData.append("taskId", deletingTask.id);
-
-    submit(formData, { method: "post" });
-    setDeletingTask(null);
-    toast.success("Task deleted successfully");
   };
 
   return (
@@ -173,6 +140,7 @@ export default function DashboardTasksPage() {
         {/* Table Pagination */}
         {(loaderData.pagination?.totalPages ?? 0) > 1 && (
           <TablePagination
+            href={"/dashboard/users"}
             currentPage={loaderData.pagination?.page ?? 1}
             totalPages={loaderData.pagination?.totalPages ?? 0}
             onPageChange={handlePageChange}
@@ -180,54 +148,6 @@ export default function DashboardTasksPage() {
         )}
       </div>
 
-      {/* Edit Dialog */}
-      {/* <Dialog open={!!editingTask} onOpenChange={() => setEditingTask(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Task</DialogTitle>
-            <DialogDescription>
-              Make changes to your task here. Click save when you're done.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-title">Title</Label>
-              <Input
-                id="edit-title"
-                value={editTitle}
-                onChange={(e) => setEditTitle(e.target.value)}
-                placeholder="Task title"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-description">Description</Label>
-              <Textarea
-                id="edit-description"
-                value={editDescription}
-                onChange={(e) => setEditDescription(e.target.value)}
-                placeholder="Task description"
-                rows={4}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingTask(null)}>
-              Cancel
-            </Button>
-            <Button onClick={handleUpdate}>Save changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog> */}
-
-      {/* Delete Dialog */}
-      <DeleteDialog
-        open={!!deletingTask}
-        onOpenChange={(open) => !open && setDeletingTask(null)}
-        title="Delete Task"
-        itemName={deletingTask?.email || ""}
-        onConfirm={handleDelete}
-        onCancel={() => setDeletingTask(null)}
-      />
     </div>
   );
 }

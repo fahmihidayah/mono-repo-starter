@@ -103,26 +103,36 @@ export class ApiClient<T> {
   }
 
 
-  async getAll({ request, page = 1, pageSize = 10 }: ApiProps & {
+  async getAll({ request, page = 1, search, pageSize = 10 }: ApiProps & {
     page?: number;
     pageSize?: number;
+    search?: { [key: string]: string }
   }): Promise<BaseResponse<T[]>> {
     const token = await getToken({ request: request });
-    return this.request<T[]>(this.getResourceUrl(`?page=${page}&pageSize=${pageSize}`), { token });
+    const parameter = new URLSearchParams();
+    parameter.append("page", page.toString());
+    parameter.append("pageSize", pageSize.toString());
+    if (search) {
+      parameter.append("filter", JSON.stringify(search));
+    }
+
+    return this.request<T[]>(this.getResourceUrl(`?${parameter.toString()}`), { token });
   }
 
   async getById({ request, id }: ApiProps & {
     id: string
   }): Promise<BaseResponse<T>> {
     const token = await getToken({ request: request });
-    return this.get<T>(this.getResourceUrl(id), { token });
+    return this.get<T>(`${id}`, { token });
   }
 
   async create({ request, data }: ApiProps & {
     data: Partial<T>
   }): Promise<BaseResponse<T>> {
     const token = await getToken({ request: request });
-    return this.post(this.getResourceUrl(), data, { token });
+    return this.post<T>("", data, {
+      token,
+    });
   }
 
   async update({ request, id, data }: ApiProps & {
@@ -130,14 +140,14 @@ export class ApiClient<T> {
     data: Partial<T>
   }): Promise<BaseResponse<T>> {
     const token = await getToken({ request: request });
-    return this.put(this.getResourceUrl(id), data, { token });
+    return this.put(`${id}`, data, { token });
   }
 
   async deleteById({ request, id }: ApiProps & {
     id: string
   }): Promise<BaseResponse<T>> {
     const token = await getToken({ request: request });
-    return this.delete(this.getResourceUrl(id), { token });
+    return this.delete(`${id}`, { token });
   }
 
   async get<T>(endpoint?: string, options?: RequestOptions): Promise<BaseResponse<T>> {

@@ -1,5 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { Edit, MoreHorizontal, Trash2 } from "lucide-react";
+import { Link, Form } from "react-router";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -9,14 +10,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { toast } from "sonner";
 
 export interface ActionColumnConfig<T> {
-  onEdit?: (item: T) => void;
-  onDelete?: (item: T) => void;
-  onCopyId?: (item: T) => void;
   getItemId: (item: T) => string;
-  getItemName?: (item: T) => string;
+  editLink?: (item: T) => string;
+  deleteFormAction?: string;
 }
 
 export function createActionColumn<T>(config: ActionColumnConfig<T>): ColumnDef<T> {
@@ -36,31 +34,26 @@ export function createActionColumn<T>(config: ActionColumnConfig<T>): ColumnDef<
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            {config.onCopyId && (
-              <DropdownMenuItem
-                onClick={() => {
-                  navigator.clipboard.writeText(itemId);
-                  toast.success("ID copied to clipboard");
-                }}
-              >
-                Copy ID
+            <DropdownMenuSeparator />
+            {config.editLink && (
+              <DropdownMenuItem asChild>
+                <Link to={config.editLink(item)}>
+                  <Edit className="mr-2 size-4" />
+                  Edit
+                </Link>
               </DropdownMenuItem>
             )}
-            {(config.onEdit || config.onDelete) && <DropdownMenuSeparator />}
-            {config.onEdit && (
-              <DropdownMenuItem onClick={() => config.onEdit?.(item)}>
-                <Edit className="mr-2 size-4" />
-                Edit
-              </DropdownMenuItem>
-            )}
-            {config.onDelete && (
-              <DropdownMenuItem
-                onClick={() => config.onDelete?.(item)}
-                className="text-destructive"
-              >
-                <Trash2 className="mr-2 size-4" />
-                Delete
-              </DropdownMenuItem>
+            {config.deleteFormAction && (
+              <Form method="post" action={config.deleteFormAction}>
+                <input type="hidden" name="intent" value="delete" />
+                <input type="hidden" name="id" value={itemId} />
+                <DropdownMenuItem asChild>
+                  <button type="submit" className="w-full text-destructive">
+                    <Trash2 className="mr-2 size-4" />
+                    Delete
+                  </button>
+                </DropdownMenuItem>
+              </Form>
             )}
           </DropdownMenuContent>
         </DropdownMenu>

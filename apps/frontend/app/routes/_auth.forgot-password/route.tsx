@@ -51,7 +51,7 @@ export async function action({ request }: Route.ActionArgs) {
       return {
         success: true,
         errors: {
-            general: result.message || 'Failed to send password reset email',
+          general: result.message || 'Failed to send password reset email',
         }
       } as ActionData;
     }

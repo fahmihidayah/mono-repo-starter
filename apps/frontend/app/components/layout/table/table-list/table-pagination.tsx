@@ -9,12 +9,14 @@ import {
 } from "~/components/ui/pagination";
 
 export interface TablePaginationProps {
+  href: string;
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
 }
 
 export function TablePagination({
+  href,
   currentPage,
   totalPages,
   onPageChange,
@@ -50,13 +52,13 @@ export function TablePagination({
         <PaginationContent>
           <PaginationItem>
             <PaginationPrevious
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                if (currentPage > 1) {
-                  onPageChange(currentPage - 1);
-                }
-              }}
+              href={`${href}?page=${currentPage - 1}`}
+              // onClick={(e) => {
+              //   e.preventDefault();
+              //   if (currentPage > 1) {
+              //     onPageChange(currentPage - 1);
+              //   }
+              // }}
               className={
                 currentPage === 1
                   ? "pointer-events-none opacity-50"
@@ -71,7 +73,7 @@ export function TablePagination({
                 <PaginationEllipsis />
               ) : (
                 <PaginationLink
-                  href="#"
+                  href={`${href}?page=${item}`}
                   onClick={(e) => {
                     e.preventDefault();
                     onPageChange(item as number);
@@ -86,13 +88,13 @@ export function TablePagination({
 
           <PaginationItem>
             <PaginationNext
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                if (currentPage < totalPages) {
-                  onPageChange(currentPage + 1);
-                }
-              }}
+              href={`${href}?page=${currentPage + 1}`}
+              // onClick={(e) => {
+              // e.preventDefault();
+              // if (currentPage < totalPages) {
+              //   onPageChange(currentPage + 1);
+              // }
+              // }}
               className={
                 currentPage === totalPages
                   ? "pointer-events-none opacity-50"
