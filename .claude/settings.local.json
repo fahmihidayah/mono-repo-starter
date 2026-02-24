@@ -10,7 +10,8 @@
       "Bash(pnpm tsc:*)",
       "Bash(pnpm --filter frontend react-router typegen:*)",
       "Bash(pnpm exec react-router typegen:*)",
-      "Bash(go build:*)"
+      "Bash(go build:*)",
+      "Bash(pnpm prettier:*)"
     ],
     "deny": [],
     "ask": []

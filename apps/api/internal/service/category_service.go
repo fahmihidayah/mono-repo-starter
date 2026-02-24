@@ -51,9 +51,9 @@ func (s *CategoryServiceImpl) Create(ctx context.Context, category *request.Crea
 
 	// Map request to domain model
 	data := &domain.Category{
-		ID:   utils.GenerateUUID(),
-		Slug: utils.GenerateSlug(category.Name),
-		Name: category.Name,
+		ID:    utils.GenerateUUID(),
+		Slug:  utils.GenerateSlug(category.Title),
+		Title: category.Title,
 	}
 
 	// Save to repository
@@ -112,8 +112,8 @@ func (s *CategoryServiceImpl) Update(ctx context.Context, id string, category *r
 	}
 
 	// Update fields
-	existingCategory.Name = category.Name
-	existingCategory.Slug = utils.GenerateSlug(category.Name)
+	existingCategory.Title = category.Title
+	existingCategory.Slug = utils.GenerateSlug(category.Title)
 
 	// Save to repository
 	if err := s.categoryRepository.Update(ctx, existingCategory); err != nil {
@@ -192,7 +192,7 @@ func (s *CategoryServiceImpl) UpdateMany(ctx context.Context, ids []string, upda
 
 		// Apply updates
 		if name, ok := updates["name"].(string); ok && name != "" {
-			category.Name = name
+			category.Title = name
 			category.Slug = utils.GenerateSlug(name)
 		}
 

@@ -423,8 +423,8 @@ func (suite *PostRepositoryTestSuite) TestPostWithCategories() {
 	user := suite.createTestUser("user-1", "test@example.com")
 
 	// Create test categories
-	category1 := &domain.Category{ID: "cat-1", Slug: "tech", Name: "Technology"}
-	category2 := &domain.Category{ID: "cat-2", Slug: "programming", Name: "Programming"}
+	category1 := &domain.Category{ID: "cat-1", Slug: "tech", Title: "Technology"}
+	category2 := &domain.Category{ID: "cat-2", Slug: "programming", Title: "Programming"}
 	suite.db.Create(category1)
 	suite.db.Create(category2)
 

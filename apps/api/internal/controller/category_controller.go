@@ -131,7 +131,7 @@ func (c *CategoryController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("[CategoryController.Create] Creating category - Name: %s", req.Name)
+	log.Printf("[CategoryController.Create] Creating category - Name: %s", req.Title)
 
 	category, err := c.categoryService.Create(r.Context(), &req)
 	if err != nil {

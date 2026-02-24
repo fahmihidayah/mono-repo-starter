@@ -48,9 +48,9 @@ func (suite *CategoryRepositoryTestSuite) TearDownSuite() {
 // Helper function to create a test category
 func (suite *CategoryRepositoryTestSuite) createTestCategory(id, slug, name string) *domain.Category {
 	category := &domain.Category{
-		ID:   id,
-		Slug: slug,
-		Name: name,
+		ID:    id,
+		Slug:  slug,
+		Title: name,
 	}
 	suite.db.Create(category)
 	return category
@@ -60,9 +60,9 @@ func (suite *CategoryRepositoryTestSuite) createTestCategory(id, slug, name stri
 func (suite *CategoryRepositoryTestSuite) TestCreate() {
 	ctx := context.Background()
 	category := &domain.Category{
-		ID:   "cat-1",
-		Slug: "technology",
-		Name: "Technology",
+		ID:    "cat-1",
+		Slug:  "technology",
+		Title: "Technology",
 	}
 
 	err := suite.repository.Create(ctx, category)
@@ -73,7 +73,7 @@ func (suite *CategoryRepositoryTestSuite) TestCreate() {
 	suite.db.First(&savedCategory, "id = ?", category.ID)
 	assert.Equal(suite.T(), category.ID, savedCategory.ID)
 	assert.Equal(suite.T(), category.Slug, savedCategory.Slug)
-	assert.Equal(suite.T(), category.Name, savedCategory.Name)
+	assert.Equal(suite.T(), category.Title, savedCategory.Title)
 }
 
 // TestCreate_DuplicateSlug tests creating a category with duplicate slug
@@ -82,9 +82,9 @@ func (suite *CategoryRepositoryTestSuite) TestCreate_DuplicateSlug() {
 	cat1 := suite.createTestCategory("cat-1", "technology", "Technology")
 
 	cat2 := &domain.Category{
-		ID:   "cat-2",
-		Slug: cat1.Slug,
-		Name: "Tech",
+		ID:    "cat-2",
+		Slug:  cat1.Slug,
+		Title: "Tech",
 	}
 
 	err := suite.repository.Create(ctx, cat2)
@@ -102,7 +102,7 @@ func (suite *CategoryRepositoryTestSuite) TestGetByID() {
 	assert.NotNil(suite.T(), category)
 	assert.Equal(suite.T(), expectedCategory.ID, category.ID)
 	assert.Equal(suite.T(), expectedCategory.Slug, category.Slug)
-	assert.Equal(suite.T(), expectedCategory.Name, category.Name)
+	assert.Equal(suite.T(), expectedCategory.Title, category.Title)
 }
 
 // TestGetByID_NotFound tests getting a non-existent category
@@ -172,9 +172,9 @@ func (suite *CategoryRepositoryTestSuite) TestGetAll_WithPagination() {
 	ctx := context.Background()
 	for i := 1; i <= 5; i++ {
 		suite.db.Create(&domain.Category{
-			ID:   "cat-" + strconv.Itoa(i),
-			Slug: "slug-" + strconv.Itoa(i),
-			Name: "Category " + strconv.Itoa(i),
+			ID:    "cat-" + strconv.Itoa(i),
+			Slug:  "slug-" + strconv.Itoa(i),
+			Title: "Category " + strconv.Itoa(i),
 		})
 	}
 
@@ -197,9 +197,9 @@ func (suite *CategoryRepositoryTestSuite) TestGetAllWithQueryParameter() {
 	ctx := context.Background()
 	for i := 1; i <= 5; i++ {
 		suite.db.Create(&domain.Category{
-			ID:   "cat-" + strconv.Itoa(i),
-			Slug: "slug-" + strconv.Itoa(i),
-			Name: "Category " + strconv.Itoa(i),
+			ID:    "cat-" + strconv.Itoa(i),
+			Slug:  "slug-" + strconv.Itoa(i),
+			Title: "Category " + strconv.Itoa(i),
 		})
 	}
 	queryParameter := &utils.QueryParams{
@@ -218,9 +218,9 @@ func (suite *CategoryRepositoryTestSuite) TestGetAllWithQueryParameterFilter() {
 	ctx := context.Background()
 	for i := 1; i <= 5; i++ {
 		suite.db.Create(&domain.Category{
-			ID:   "cat-" + strconv.Itoa(i),
-			Slug: "slug-" + strconv.Itoa(i),
-			Name: "Category " + strconv.Itoa(i),
+			ID:    "cat-" + strconv.Itoa(i),
+			Slug:  "slug-" + strconv.Itoa(i),
+			Title: "Category " + strconv.Itoa(i),
 		})
 	}
 	queryParameter := &utils.QueryParams{
@@ -242,9 +242,9 @@ func (suite *CategoryRepositoryTestSuite) TestCountByQuery() {
 	ctx := context.Background()
 	for i := 1; i <= 5; i++ {
 		suite.db.Create(&domain.Category{
-			ID:   "cat-" + strconv.Itoa(i),
-			Slug: "slug-" + strconv.Itoa(i),
-			Name: "Category " + strconv.Itoa(i),
+			ID:    "cat-" + strconv.Itoa(i),
+			Slug:  "slug-" + strconv.Itoa(i),
+			Title: "Category " + strconv.Itoa(i),
 		})
 	}
 	queryParameter := &utils.QueryParams{
@@ -263,9 +263,9 @@ func (suite *CategoryRepositoryTestSuite) TestCountByQueryFilter() {
 	ctx := context.Background()
 	for i := 1; i <= 5; i++ {
 		suite.db.Create(&domain.Category{
-			ID:   "cat-" + strconv.Itoa(i),
-			Slug: "slug-" + strconv.Itoa(i),
-			Name: "Category " + strconv.Itoa(i),
+			ID:    "cat-" + strconv.Itoa(i),
+			Slug:  "slug-" + strconv.Itoa(i),
+			Title: "Category " + strconv.Itoa(i),
 		})
 	}
 	queryParameter := &utils.QueryParams{
@@ -288,7 +288,7 @@ func (suite *CategoryRepositoryTestSuite) TestUpdate() {
 	ctx := context.Background()
 	category := suite.createTestCategory("cat-1", "original-slug", "Original Name")
 
-	category.Name = "Updated Name"
+	category.Title = "Updated Name"
 	category.Slug = "updated-slug"
 
 	err := suite.repository.Update(ctx, category)
@@ -296,7 +296,7 @@ func (suite *CategoryRepositoryTestSuite) TestUpdate() {
 	assert.NoError(suite.T(), err)
 
 	updatedCategory, _ := suite.repository.GetByID(ctx, category.ID)
-	assert.Equal(suite.T(), "Updated Name", updatedCategory.Name)
+	assert.Equal(suite.T(), "Updated Name", updatedCategory.Title)
 	assert.Equal(suite.T(), "updated-slug", updatedCategory.Slug)
 }
 
@@ -381,9 +381,9 @@ func (suite *CategoryRepositoryTestSuite) TestGetAllByQueryParameterIds() {
 	ctx := context.Background()
 	for i := 1; i <= 5; i++ {
 		suite.db.Create(&domain.Category{
-			ID:   "cat-" + strconv.Itoa(i),
-			Slug: "slug-" + strconv.Itoa(i),
-			Name: "Category " + strconv.Itoa(i),
+			ID:    "cat-" + strconv.Itoa(i),
+			Slug:  "slug-" + strconv.Itoa(i),
+			Title: "Category " + strconv.Itoa(i),
 		})
 	}
 	queryParameter := &utils.QueryParams{
