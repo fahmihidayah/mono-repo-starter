@@ -1,9 +1,10 @@
-import { useState } from "react";
-import { useLoaderData, useSearchParams } from "react-router";
+import { useEffect, useState } from "react";
+import { useLoaderData, useSearchParams, useActionData, useSubmit } from "react-router";
 import { PageHeader, DataTable, TablePagination } from "~/components/layout/table/table-list";
 import createColumn from "~/components/layout/table/column/create-column";
 import type { User } from "~/features/users/type";
 import { userApi } from "~/lib/api/users";
+import { toast } from "sonner";
 
 // Loader - Fetch users with pagination and search using UserRepository
 export async function loader({ request }: { request: Request }) {
@@ -28,6 +29,7 @@ export async function action({ request }: { request: Request }) {
   const formData = await request.formData();
   const intent = formData.get("intent");
   const id = formData.get("id")?.toString();
+  const ids = formData.getAll("ids[]");
 
   try {
     if (intent === "delete" && id) {
@@ -37,6 +39,15 @@ export async function action({ request }: { request: Request }) {
       });
       return { success: true, message: "User deleted successfully" };
     }
+
+    if (intent === "bulkDelete" && ids.length > 0) {
+      await userApi.deleteMany({
+        request,
+        ids: ids.map((id) => id.toString()),
+      });
+      return { success: true, message: `${ids.length} user${ids.length !== 1 ? "s" : ""} deleted successfully` };
+    }
+
     return { success: false, message: "Invalid action" };
   } catch (error) {
     console.error("Action error:", error);
@@ -53,10 +64,23 @@ export function meta() {
 
 export default function DashboardUsersPage() {
   const loaderData = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>();
+  const submit = useSubmit();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // State
   const [searchValue, setSearchValue] = useState(searchParams.get("search") || "");
+
+  // Show toast on delete action
+  useEffect(() => {
+    if (actionData) {
+      if (actionData.success) {
+        toast.success(actionData.message || "User deleted successfully!");
+      } else {
+        toast.error(actionData.message || "Failed to delete user");
+      }
+    }
+  }, [actionData]);
 
   // Table columns
   const columns = createColumn<User>({
@@ -112,6 +136,15 @@ export default function DashboardUsersPage() {
     setSearchParams(params);
   };
 
+  const handleBulkDelete = (selectedIds: string[]) => {
+    const formData = new FormData();
+    formData.append("intent", "bulkDelete");
+    selectedIds.forEach((id) => {
+      formData.append("ids[]", id);
+    });
+    submit(formData, { method: "post" });
+  };
+
   return (
     <div className="flex-1 p-6">
       <div className="space-y-6">
@@ -129,10 +162,13 @@ export default function DashboardUsersPage() {
           description={`${loaderData.pagination?.totalDocs} user${loaderData.pagination?.totalDocs !== 1 ? "s" : ""} total`}
           data={loaderData.data ?? []}
           columns={columns}
+          enableRowSelection={true}
+          onBulkDelete={handleBulkDelete}
+          getRowId={(row) => row.id}
           searchPlaceholder="Search users..."
           searchValue={searchValue}
           onSearchChange={handleSearch}
-          emptyMessage="No tasks found."
+          emptyMessage="No users found."
           totalPages={loaderData.pagination?.totalPages ?? 0}
           manualPagination
         />

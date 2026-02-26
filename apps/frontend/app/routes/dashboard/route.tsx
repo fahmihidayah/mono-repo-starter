@@ -21,7 +21,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   return {
     user,
-    flash: { error, success }
+    flash: { error, success },
   } as const;
 }
 
@@ -49,10 +49,10 @@ export default function DashboardRoute() {
         email: user.userEmail,
       }}
       config={{
-        header : {
-          appInitial : "SA",
+        header: {
+          appInitial: "SA",
           appName: "Starter Apps",
-          subtitle: "Starter app"
+          subtitle: "Starter app",
         },
         headerTitle: "Main",
         navigationGroups: [
@@ -65,15 +65,19 @@ export default function DashboardRoute() {
                 icon: Home,
               },
               {
+                title: "Media",
+                url: "/dashboard/media",
+                icon: FileText,
+              },
+              {
                 title: "Users",
                 url: "/dashboard/users",
                 icon: Users,
               },
               {
-                title : "Categories",
-                url : "/dashboard/categories",
-                icon : FolderTree,
-
+                title: "Categories",
+                url: "/dashboard/categories",
+                icon: FolderTree,
               },
               {
                 title: "Post",
@@ -91,8 +95,8 @@ export default function DashboardRoute() {
                 icon: Settings,
               },
             ],
-          }
-        ]
+          },
+        ],
       }}
       signOutAction="/logout"
     />

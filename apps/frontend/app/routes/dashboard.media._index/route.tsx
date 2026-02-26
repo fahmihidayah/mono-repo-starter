@@ -1,8 +1,8 @@
-import type { Category } from "~/features/category/type";
+import type { Media } from "~/features/media/type";
 import createColumn from "~/components/layout/table/column/create-column";
 import { DataTable, PageHeader, TablePagination } from "~/components/layout/table/table-list";
 import { useLoaderData, useSearchParams, useActionData, useSubmit } from "react-router";
-import { categoryApi } from "~/lib/api/category";
+import { mediaApi } from "~/lib/api/media";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -12,18 +12,16 @@ export async function loader({ request }: { request: Request }) {
   const pageSize = Number.parseInt(url.searchParams.get("limit") || "10");
   const search = url.searchParams.get("search") || "";
 
-  // Use repository's findManyPaginated method
-  const result = await categoryApi.getAll({
+  const result = await mediaApi.getAll({
     request,
     page,
     pageSize,
-    search: { title: search },
+    search: { file_name: search },
   });
 
   return result;
 }
 
-// Action - Handle delete and update operations
 export async function action({ request }: { request: Request }) {
   const formData = await request.formData();
   const intent = formData.get("intent");
@@ -32,19 +30,19 @@ export async function action({ request }: { request: Request }) {
 
   try {
     if (intent === "delete" && id) {
-      await categoryApi.deleteById({
+      await mediaApi.deleteById({
         request,
         id,
       });
-      return { success: true, message: "Category deleted successfully" };
+      return { success: true, message: "Media deleted successfully" };
     }
 
     if (intent === "bulkDelete" && ids.length > 0) {
-      await categoryApi.deleteMany({
+      await mediaApi.deleteMany({
         request,
         ids: ids.map((id) => id.toString()),
       });
-      return { success: true, message: `${ids.length} categor${ids.length !== 1 ? "ies" : "y"} deleted successfully` };
+      return { success: true, message: `${ids.length} media file(s) deleted successfully` };
     }
 
     return { success: false, message: "Invalid action" };
@@ -54,57 +52,78 @@ export async function action({ request }: { request: Request }) {
   }
 }
 
-export default function CategoriesDashboardPage() {
+export default function MediaDashboardPage() {
   const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const submit = useSubmit();
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // State
   const [searchValue, setSearchValue] = useState(searchParams.get("search") || "");
 
-  // Show toast on delete action
+  useEffect(() => {
+    const success = searchParams.get("success");
+    if (success === "uploaded") {
+      toast.success("Media uploaded successfully!");
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete("success");
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
   useEffect(() => {
     if (actionData) {
       if (actionData.success) {
-        toast.success(actionData.message || "Category deleted successfully!");
+        toast.success(actionData.message || "Media deleted successfully!");
       } else {
-        toast.error(actionData.message || "Failed to delete category");
+        toast.error(actionData.message || "Failed to delete media");
       }
     }
   }, [actionData]);
 
-  const columns = createColumn<Category>({
+  const columns = createColumn<Media>({
     columnConfig: [
       {
+        accessorKey: "url",
+        type: "image",
+        header: "Image",
+        fallback: "/default-image.png",
+      },
+      {
         type: "text",
-        accessorKey: "slug",
-        header: "Slug",
-        fallback: "No slug",
+        accessorKey: "file_name",
+        header: "File Name",
+        fallback: "No file name",
         isBold: true,
       },
       {
-        type: "text",
-        accessorKey: "title",
-        header: "Title",
-        fallback: "No Title",
+        type: "url",
+        accessorKey: "url",
+        header: "URL",
+        fallback: "No URL",
+        maxLength: 50,
       },
       {
-        type: "date",
-        accessorKey: "createdAt",
-        header: "Created",
-      },
-      {
-        type: "date",
-        accessorKey: "updatedAt",
-        header: "Updated",
+        type: "custom",
+        accessorKey: "file_size",
+        header: "Size",
+        cell: ({ row }) => {
+          const size = row.original.file_size;
+          if (!size) return <span className="text-muted-foreground">-</span>;
+
+          const formatSize = (bytes: number) => {
+            if (bytes < 1024) return `${bytes} B`;
+            if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+            return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+          };
+
+          return <span className="text-sm">{formatSize(size)}</span>;
+        },
       },
     ],
     actionColumnConfig: {
-      getItemId: (category) => category.id,
-      editLink: (category) => `/dashboard/categories/${category.id}`,
-      deleteFormAction: "/dashboard/categories",
+      getItemId: (media) => media.id,
+      deleteFormAction: "/dashboard/media",
     },
   });
 
@@ -116,11 +135,10 @@ export default function CategoriesDashboardPage() {
     } else {
       params.delete("search");
     }
-    params.set("page", "1"); // Reset to first page
+    params.set("page", "1");
     setSearchParams(params);
   };
 
-  // Handle page change
   const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams(searchParams);
     params.set("page", newPage.toString());
@@ -139,35 +157,32 @@ export default function CategoriesDashboardPage() {
   return (
     <div className="flex-1 p-6">
       <div className="space-y-6">
-        {/* Page Header */}
         <PageHeader
-          title="Categories"
-          description="Manage and organize your categories efficiently"
-          addButtonText="Add Category"
-          addButtonLink="/dashboard/categories/add"
+          title="Media"
+          description="Manage and organize your media files"
+          addButtonText="Upload Media"
+          addButtonLink="/dashboard/media/upload"
         />
 
-        {/* Data Table */}
         <DataTable
-          title="All Categorie"
-          description={`${loaderData.pagination?.totalDocs} categories${loaderData.pagination?.totalDocs !== 1 ? "" : ""} total`}
+          title="All Media"
+          description={`${loaderData.pagination?.totalDocs} media file${loaderData.pagination?.totalDocs !== 1 ? "s" : ""} total`}
           data={loaderData.data ?? []}
           columns={columns}
+          searchPlaceholder="Search media files..."
+          searchValue={searchValue}
+          onSearchChange={handleSearch}
+          emptyMessage="No media files found."
+          totalPages={loaderData.pagination?.totalPages ?? 0}
+          manualPagination
           enableRowSelection={true}
           onBulkDelete={handleBulkDelete}
           getRowId={(row) => row.id}
-          searchPlaceholder="Search categories..."
-          searchValue={searchValue}
-          onSearchChange={handleSearch}
-          emptyMessage="No categories found."
-          totalPages={loaderData.pagination?.totalPages ?? 0}
-          manualPagination
         />
 
-        {/* Table Pagination */}
         {(loaderData.pagination?.totalPages ?? 0) > 1 && (
           <TablePagination
-            href={"/dashboard/categories"}
+            href={"/dashboard/media"}
             currentPage={loaderData.pagination?.page ?? 1}
             totalPages={loaderData.pagination?.totalPages ?? 0}
             onPageChange={handlePageChange}

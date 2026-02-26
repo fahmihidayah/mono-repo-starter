@@ -2,12 +2,12 @@ import type { BaseResponse } from "~/types";
 import { getToken } from "./utils.server";
 import type { ApiProps } from "./type";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
 // Import getAuthToken at runtime to avoid circular dependency
 const getAuthToken = () => {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('auth_token');
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("auth_token");
 };
 
 export interface RequestOptions extends RequestInit {
@@ -19,20 +19,19 @@ export class ApiClient<T> {
   private resource: string;
   private defaultToken?: string; // Optional default token for server-side usage
 
-
   private getResourceUrl(endpoint?: string): string {
     const base = `${this.baseUrl}/${this.resource}`;
     if (!endpoint) return base;
-    if (endpoint.startsWith('?')) return `${base}${endpoint}`;
+    if (endpoint.startsWith("?")) return `${base}${endpoint}`;
     // Remove leading slash from endpoint to avoid double slashes
-    const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+    const cleanEndpoint = endpoint.startsWith("/") ? endpoint.slice(1) : endpoint;
     return `${base}/${cleanEndpoint}`;
   }
 
   constructor({
     resource,
     baseUrl = API_BASE_URL,
-    defaultToken
+    defaultToken,
   }: {
     resource: string;
     baseUrl?: string;
@@ -56,12 +55,12 @@ export class ApiClient<T> {
     const token = options.token || this.defaultToken || getAuthToken();
 
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
 
     // Add Authorization header if token exists
     if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+      headers["Authorization"] = `Bearer ${token}`;
     }
 
     console.log("API Request to:", url, "with options:", headers);
@@ -102,11 +101,15 @@ export class ApiClient<T> {
     return response.json();
   }
 
-
-  async getAll({ request, page = 1, search, pageSize = 10 }: ApiProps & {
+  async getAll({
+    request,
+    page = 1,
+    search,
+    pageSize = 10,
+  }: ApiProps & {
     page?: number;
     pageSize?: number;
-    search?: { [key: string]: string }
+    search?: { [key: string]: string };
   }): Promise<BaseResponse<T[]>> {
     const token = await getToken({ request: request });
     const parameter = new URLSearchParams();
@@ -119,15 +122,21 @@ export class ApiClient<T> {
     return this.request<T[]>(this.getResourceUrl(`?${parameter.toString()}`), { token });
   }
 
-  async getById({ request, id }: ApiProps & {
-    id: string
+  async getById({
+    request,
+    id,
+  }: ApiProps & {
+    id: string;
   }): Promise<BaseResponse<T>> {
     const token = await getToken({ request: request });
     return this.get<T>(`${id}`, { token });
   }
 
-  async create({ request, data }: ApiProps & {
-    data: Partial<T>
+  async create({
+    request,
+    data,
+  }: ApiProps & {
+    data: Partial<T>;
   }): Promise<BaseResponse<T>> {
     const token = await getToken({ request: request });
     return this.post<T>("", data, {
@@ -135,51 +144,81 @@ export class ApiClient<T> {
     });
   }
 
-  async update({ request, id, data }: ApiProps & {
+  async update({
+    request,
+    id,
+    data,
+  }: ApiProps & {
     id: string;
-    data: Partial<T>
+    data: Partial<T>;
   }): Promise<BaseResponse<T>> {
     const token = await getToken({ request: request });
     return this.put(`${id}`, data, { token });
   }
 
-  async deleteById({ request, id }: ApiProps & {
-    id: string
+  async deleteById({
+    request,
+    id,
+  }: ApiProps & {
+    id: string;
   }): Promise<BaseResponse<T>> {
     const token = await getToken({ request: request });
     return this.delete(`${id}`, { token });
   }
 
+  async deleteMany({
+    request,
+    ids,
+  }: ApiProps & {
+    ids: string[];
+  }): Promise<BaseResponse<null>> {
+    const token = await getToken({ request: request });
+    const filter = JSON.stringify({ id: ids });
+    return this.delete(`?filter=${encodeURIComponent(filter)}`, { token });
+  }
+
   async get<T>(endpoint?: string, options?: RequestOptions): Promise<BaseResponse<T>> {
-    return this.request<T>(this.getResourceUrl(endpoint), { ...options, method: 'GET' });
+    return this.request<T>(this.getResourceUrl(endpoint), { ...options, method: "GET" });
   }
 
-  async post<T>(endpoint?: string, data?: unknown, options?: RequestOptions): Promise<BaseResponse<T>> {
+  async post<T>(
+    endpoint?: string,
+    data?: unknown,
+    options?: RequestOptions
+  ): Promise<BaseResponse<T>> {
     return this.request<T>(this.getResourceUrl(endpoint), {
       ...options,
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(data),
     });
   }
 
-  async put<T>(endpoint?: string, data?: unknown, options?: RequestOptions): Promise<BaseResponse<T>> {
+  async put<T>(
+    endpoint?: string,
+    data?: unknown,
+    options?: RequestOptions
+  ): Promise<BaseResponse<T>> {
     return this.request<T>(this.getResourceUrl(endpoint), {
       ...options,
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(data),
     });
   }
 
-  async patch<T>(endpoint?: string, data?: unknown, options?: RequestOptions): Promise<BaseResponse<T>> {
+  async patch<T>(
+    endpoint?: string,
+    data?: unknown,
+    options?: RequestOptions
+  ): Promise<BaseResponse<T>> {
     return this.request<T>(this.getResourceUrl(endpoint), {
       ...options,
-      method: 'PATCH',
+      method: "PATCH",
       body: JSON.stringify(data),
     });
   }
 
   async delete<T>(endpoint?: string, options?: RequestOptions): Promise<BaseResponse<T>> {
-    return this.request<T>(this.getResourceUrl(endpoint), { ...options, method: 'DELETE' });
+    return this.request<T>(this.getResourceUrl(endpoint), { ...options, method: "DELETE" });
   }
 }
 
