@@ -21,6 +21,26 @@ export function useResourceForm(config?: UseResourceFormConfig) {
     }
   }, [actionData]);
 
+  const submitFormSchema = (form: any) => {
+    const formData = new FormData();
+    Object.entries(form).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        formData.delete(key);
+        value.forEach((item) => formData.append(key, item));
+      } else if (value instanceof File) {
+        formData.append(key, value);
+      } else if (typeof value === "string") {
+        formData.append(key, value);
+      } else if (typeof value === "number" || typeof value === "boolean") {
+        formData.append(key, value.toString());
+      } else {
+        formData.append(key, `${value}`);
+      }
+    });
+    formData;
+    handleSubmit(formData);
+  };
+
   const handleSubmit = (formData: FormData) => {
     if (config?.onSubmit) {
       config.onSubmit(formData);
@@ -29,6 +49,7 @@ export function useResourceForm(config?: UseResourceFormConfig) {
   };
 
   return {
+    submitFormSchema,
     handleSubmit,
     isSubmitting,
     actionData,

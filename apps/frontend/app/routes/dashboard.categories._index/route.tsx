@@ -2,7 +2,7 @@ import { useLoaderData } from "react-router";
 import { categoryListLoader } from "~/features/category/loaders";
 import { deleteCategoryAction } from "~/features/category/actions";
 import { CategoryList } from "~/features/category/components";
-import { useCategoryList } from "~/features/category/hooks";
+import { useResourceList } from "~/lib/hooks";
 
 export async function loader({ request }: { request: Request }) {
   return categoryListLoader({ request });
@@ -14,8 +14,9 @@ export async function action({ request }: { request: Request }) {
 
 export default function CategoriesDashboardPage() {
   const loaderData = useLoaderData<typeof loader>();
-  const { searchValue, handleSearch, handlePageChange, handleBulkDelete } = useCategoryList();
-
+  const { searchValue, handleSearch, handlePageChange, handleBulkDelete } = useResourceList({
+    successMessage: "Category created successfully!",
+  });
   return (
     <CategoryList
       categories={loaderData.data ?? []}

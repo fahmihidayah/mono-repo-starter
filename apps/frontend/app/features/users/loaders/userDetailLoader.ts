@@ -1,3 +1,4 @@
+import { createDetailLoader } from "~/lib/loaders";
 import { userApi } from "../api/users";
 
 export async function userDetailLoader({
@@ -7,9 +8,13 @@ export async function userDetailLoader({
   request: Request;
   id: string;
 }) {
-  const user = await userApi.getById({
+  const user = await createDetailLoader({
     request,
     id,
+    getByIdFn: async (userId, req) => {
+      return userApi.getById({ request: req, id: userId });
+    },
   });
+
   return { user };
 }

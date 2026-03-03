@@ -3,7 +3,7 @@ import type { Route } from "./+types/route";
 import { categoryDetailLoader } from "~/features/category/loaders";
 import { updateCategoryAction } from "~/features/category/actions";
 import { CategoryFormCard } from "~/features/category/components";
-import { useCategoryForm } from "~/features/category/hooks";
+import { useResourceForm } from "~/lib/hooks";
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   return categoryDetailLoader({ request, id: params.id });
@@ -15,7 +15,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 
 export default function EditCategoryPage() {
   const { category } = useLoaderData<typeof loader>();
-  const { handleSubmit, isSubmitting } = useCategoryForm();
+  const { submitFormSchema, isSubmitting } = useResourceForm();
 
   return (
     <CategoryFormCard
@@ -23,7 +23,7 @@ export default function EditCategoryPage() {
       defaultValues={{
         title: category.data?.title || "",
       }}
-      onSubmit={handleSubmit}
+      onSubmit={submitFormSchema}
       isSubmitting={isSubmitting}
       submitButtonText="Update"
     />

@@ -1,7 +1,6 @@
-import { redirect } from "react-router";
+import { updateResourceAction } from "~/lib/actions";
 import { userApi } from "../api/users";
 import { userFormSchema } from "../types";
-import type { ActionData } from "~/types";
 
 export async function updateUserAction({
   request,
@@ -10,33 +9,14 @@ export async function updateUserAction({
   request: Request;
   id: string;
 }) {
-  const formData = await request.formData();
-  const data = Object.fromEntries(formData);
-  const validation = userFormSchema.safeParse(data);
-
-  if (!validation.success) {
-    const fieldErrors = validation.error.flatten((issue) => issue.message).fieldErrors;
-    return {
-      success: false,
-      errors: {
-        ...fieldErrors,
-      },
-    } as ActionData;
-  }
-
-  try {
-    await userApi.update({
-      request,
-      data: data,
-      id,
-    });
-    return redirect("/dashboard/users");
-  } catch (error) {
-    return {
-      success: false,
-      errors: {
-        general: "Failed to update user. Please try again.",
-      },
-    } as ActionData;
-  }
+  return updateResourceAction({
+    request,
+    id,
+    schema: userFormSchema,
+    updateFn: async (userId, data, req) => {
+      return userApi.update({ request: req, data, id: userId });
+    },
+    redirectPath: "/dashboard/users",
+    resourceName: "user",
+  });
 }

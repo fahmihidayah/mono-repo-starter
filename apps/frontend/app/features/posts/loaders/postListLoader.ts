@@ -1,17 +1,10 @@
+import { createListLoader } from "~/lib/loaders";
 import { postApi } from "../api";
 
 export async function postListLoader({ request }: { request: Request }) {
-  const url = new URL(request.url);
-  const page = Number.parseInt(url.searchParams.get("page") || "1");
-  const pageSize = Number.parseInt(url.searchParams.get("limit") || "10");
-  const search = url.searchParams.get("search") || "";
-
-  const result = await postApi.getAll({
+  return createListLoader({
     request,
-    page,
-    pageSize,
-    search: { title: search },
+    getAllFn: postApi.getAll.bind(postApi),
+    searchField: "title",
   });
-
-  return result;
 }
