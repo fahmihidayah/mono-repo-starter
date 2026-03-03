@@ -46,7 +46,7 @@ export async function action({ request }: { request: Request }) {
   const data = {
     title: formData.get("title"),
     content: formData.get("content"),
-    categoryIds: categoryIds,
+    category_ids: categoryIds,
   };
 
   const validation = postFormSchema.safeParse(data);
