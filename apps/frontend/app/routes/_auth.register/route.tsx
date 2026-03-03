@@ -1,7 +1,14 @@
 import { Link, Form, redirect, useActionData, useNavigation, useSubmit } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 import { PasswordInput } from "~/components/ui/password-input";
 import { getSession, commitSession } from "~/session.server";
 import type { Route } from "./+types/route";
@@ -15,10 +22,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '~/components/ui/form';
+} from "~/components/ui/form";
 import { Lock, Mail, User } from "lucide-react";
 import type { ActionData } from "~/types";
-import { authApi } from "~/lib/api/auth";
+import { authApi } from "~/features/users/api/auth";
 import { calculateSessionMaxAge } from "~/lib/utils.server";
 
 // Meta function for SEO
@@ -43,7 +50,7 @@ export async function action({ request }: Route.ActionArgs) {
       success: false,
       errors: {
         ...fieldErrors,
-      }
+      },
     } as ActionData;
   }
 
@@ -56,7 +63,7 @@ export async function action({ request }: Route.ActionArgs) {
       success: false,
       errors: {
         general: result.message || "Registration failed. Please try again.",
-      }
+      },
     } as ActionData;
   }
 
@@ -142,7 +149,8 @@ export default function Register() {
                     </FormControl>
                     <FormMessage />
                   </FormItem>
-                )} />
+                )}
+              />
 
               {/* Email field */}
               <FormField
@@ -169,7 +177,8 @@ export default function Register() {
                     </FormControl>
                     <FormMessage />
                   </FormItem>
-                )} />
+                )}
+              />
 
               {/* Password field */}
               <FormField
@@ -188,9 +197,11 @@ export default function Register() {
                           required
                           disabled={isSubmitting}
                           aria-invalid={actionData?.errors?.password ? "true" : undefined}
-                          aria-describedby={actionData?.errors?.password ? "password-error" : undefined}
+                          aria-describedby={
+                            actionData?.errors?.password ? "password-error" : undefined
+                          }
                           {...field}
-                          value={(field.value as string) ?? ''}
+                          value={(field.value as string) ?? ""}
                         />
                       </div>
                     </FormControl>
@@ -216,9 +227,13 @@ export default function Register() {
                           required
                           disabled={isSubmitting}
                           aria-invalid={actionData?.errors?.confirmPassword ? "true" : undefined}
-                          aria-describedby={actionData?.errors?.confirmPassword ? "confirmPassword-error" : undefined}
+                          aria-describedby={
+                            actionData?.errors?.confirmPassword
+                              ? "confirmPassword-error"
+                              : undefined
+                          }
                           {...field}
-                          value={(field.value as string) ?? ''}
+                          value={(field.value as string) ?? ""}
                         />
                       </div>
                     </FormControl>

@@ -1,6 +1,6 @@
 import { redirect } from "react-router";
 import type { Route } from "./+types/route";
-import { authApi } from "~/lib/api/auth";
+import { authApi } from "~/features/users/api/auth";
 import * as serverSession from "~/session.server";
 
 /**
@@ -8,11 +8,7 @@ import * as serverSession from "~/session.server";
  * POST /logout
  */
 export async function action({ request }: Route.ActionArgs) {
-  const {
-    getSession,
-    commitSession,
-    destroySession,
-  } = serverSession;
+  const { getSession, commitSession, destroySession } = serverSession;
   const session = await getSession(request.headers.get("Cookie"));
   const token = session.get("token");
 

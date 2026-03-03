@@ -1,5 +1,5 @@
-import type { BaseResponse } from '~/types';
-import { ApiClient, apiClient } from '../api';
+import type { BaseResponse } from "~/types";
+import { ApiClient, apiClient } from "../../../lib/api";
 
 export interface LoginCredentials {
   email: string;
@@ -30,7 +30,7 @@ export interface UserSession {
   createdAt: string;
 }
 
-export class AuthApi extends ApiClient<AuthData> {
+export class AuthApi extends ApiClient<AuthData, any> {
   constructor() {
     super({
       resource: "api/users/auth",

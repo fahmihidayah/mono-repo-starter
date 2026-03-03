@@ -15,18 +15,12 @@ import {
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { MultiSelect } from "~/components/ui/multi-select";
-import { postApi } from "~/lib/api/posts";
-import { categoryApi } from "~/lib/api/category";
+import LexicalEditorField from "~/components/editor/LexicalEditorField";
+import { postApi } from "~/features/posts/api";
+import { categoryApi } from "~/features/category/api";
 import type { ActionData } from "~/types";
 import type { Route } from "./+types/route";
-
-const PostFormSchema = z.object({
-  title: z.string().min(1, "Title is required").max(255, "Title must be less than 255 characters"),
-  content: z.string().min(1, "Content is required"),
-  categoryIds: z.array(z.string()).min(1, "Select at least one category"),
-});
-
-type PostFormData = z.infer<typeof PostFormSchema>;
+import { postFormSchema, type PostFormSchema } from "~/features/posts/types";
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   const id = params.id;
@@ -51,7 +45,7 @@ export async function action({ request, params }: Route.ActionArgs) {
     categoryIds: categoryIds,
   };
 
-  const validation = PostFormSchema.safeParse(data);
+  const validation = postFormSchema.safeParse(data);
 
   if (!validation.success) {
     const fieldErrors = validation.error.flatten((issue) => issue.message).fieldErrors;
@@ -69,7 +63,7 @@ export async function action({ request, params }: Route.ActionArgs) {
       data: {
         title: validation.data.title,
         content: validation.data.content,
-        category_ids: validation.data.categoryIds,
+        category_ids: validation.data.category_ids,
       },
       id,
     });
@@ -86,23 +80,23 @@ export async function action({ request, params }: Route.ActionArgs) {
 
 export default function EditPostPage() {
   const { post, categories } = useLoaderData<typeof loader>();
-  const form = useForm<PostFormData>({
-    resolver: zodResolver(PostFormSchema),
+  const form = useForm<PostFormSchema>({
+    resolver: zodResolver(postFormSchema),
     defaultValues: {
       title: post?.title || "",
       content: post?.content || "",
-      categoryIds: post?.categories?.map((cat) => cat.id) || [],
+      category_ids: post?.categories?.map((cat) => cat.id) || [],
     },
   });
 
   const submit = useSubmit();
 
-  const onSubmit = (data: PostFormData) => {
+  const onSubmit = (data: PostFormSchema) => {
     const formData = new FormData();
     formData.append("title", data.title);
     formData.append("content", data.content);
-    data.categoryIds.forEach((id) => {
-      formData.append("categoryIds", id);
+    data.category_ids.forEach((id) => {
+      formData.append("category_ids", id);
     });
 
     submit(formData, {
@@ -112,69 +106,68 @@ export default function EditPostPage() {
 
   return (
     <div className="container w-full mx-auto p-5">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Edit Post</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <ReactRouterForm onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Title</FormLabel>
-                    <FormControl>
-                      <Input disabled={field.disabled} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+      <Form {...form}>
+        <ReactRouterForm onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="flex flex-row justify-between items-center p-6 ">
+            <h3 className="text-2xl font-bold">Edit Post</h3>
+            <Button type="submit">Update</Button>
+          </div>
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Title</FormLabel>
+                <FormControl>
+                  <Input disabled={field.disabled} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-              <FormField
-                control={form.control}
-                name="content"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Content</FormLabel>
-                    <FormControl>
-                      <Textarea disabled={field.disabled} rows={10} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          <FormField
+            control={form.control}
+            name="content"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Content</FormLabel>
+                <FormControl>
+                  <LexicalEditorField
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Write your post content..."
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-              <FormField
-                control={form.control}
-                name="categoryIds"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Categories</FormLabel>
-                    <FormControl>
-                      <MultiSelect
-                        options={categories.map((cat) => ({
-                          label: cat.title || "",
-                          value: cat.id,
-                        }))}
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder="Select categories..."
-                        disabled={field.disabled}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <Button type="submit">Update</Button>
-            </ReactRouterForm>
-          </Form>
-        </CardContent>
-      </Card>
+          <FormField
+            control={form.control}
+            name="category_ids"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Categories</FormLabel>
+                <FormControl>
+                  <MultiSelect
+                    options={categories.map((cat) => ({
+                      label: cat.title || "",
+                      value: cat.id,
+                    }))}
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Select categories..."
+                    disabled={field.disabled}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </ReactRouterForm>
+      </Form>
     </div>
   );
 }

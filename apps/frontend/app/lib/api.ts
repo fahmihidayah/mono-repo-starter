@@ -14,7 +14,7 @@ export interface RequestOptions extends RequestInit {
   token?: string; // Optional token to use for this request
 }
 
-export class ApiClient<T> {
+export class ApiClient<T, F> {
   private baseUrl: string;
   private resource: string;
   private defaultToken?: string; // Optional default token for server-side usage
@@ -136,7 +136,7 @@ export class ApiClient<T> {
     request,
     data,
   }: ApiProps & {
-    data: Partial<T>;
+    data: Partial<F>;
   }): Promise<BaseResponse<T>> {
     const token = await getToken({ request: request });
     return this.post<T>("", data, {
@@ -150,7 +150,7 @@ export class ApiClient<T> {
     data,
   }: ApiProps & {
     id: string;
-    data: Partial<T>;
+    data: Partial<F>;
   }): Promise<BaseResponse<T>> {
     const token = await getToken({ request: request });
     return this.put(`${id}`, data, { token });

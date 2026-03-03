@@ -1,8 +1,8 @@
-import type { Media } from "~/features/media/type";
+import type { Media } from "~/features/media/types";
 import createColumn from "~/components/layout/table/column/create-column";
 import { DataTable, PageHeader, TablePagination } from "~/components/layout/table/table-list";
 import { useLoaderData, useSearchParams, useActionData, useSubmit } from "react-router";
-import { mediaApi } from "~/lib/api/media";
+import { mediaApi } from "~/features/media/api";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 

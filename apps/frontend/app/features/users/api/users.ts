@@ -1,5 +1,4 @@
-import { ApiClient } from '../api';
-
+import { ApiClient } from "../../../lib/api";
 
 export interface User {
   id: string;
@@ -12,8 +11,7 @@ export interface User {
   updatedAt: Date;
 }
 
-
-export const userApi = new ApiClient<User>({
+export const userApi = new ApiClient<User, any>({
   resource: "api/users",
-  defaultToken: ""
+  defaultToken: "",
 });

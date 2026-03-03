@@ -1,7 +1,14 @@
 import { Link, Form, useActionData, useNavigation, useSubmit } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 import type { Route } from "../_auth.forgot-password/+types/route";
 import { useForm } from "react-hook-form";
 import { forgotPasswordFormSchema, type ForgotPasswordFormData } from "./types";
@@ -13,10 +20,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '~/components/ui/form';
+} from "~/components/ui/form";
 import { Mail } from "lucide-react";
 import type { ActionData } from "~/types";
-import { authApi } from "~/lib/api/auth";
+import { authApi } from "~/features/users/api/auth";
 
 // Meta function for SEO
 export function meta() {
@@ -40,7 +47,7 @@ export async function action({ request }: Route.ActionArgs) {
       success: false,
       errors: {
         ...fieldErrors,
-      }
+      },
     } as ActionData;
   }
 
@@ -51,23 +58,23 @@ export async function action({ request }: Route.ActionArgs) {
       return {
         success: true,
         errors: {
-          general: result.message || 'Failed to send password reset email',
-        }
+          general: result.message || "Failed to send password reset email",
+        },
       } as ActionData;
     }
 
     return {
       success: false,
       errors: {
-        general: result.message || 'Failed to send password reset email',
-      }
+        general: result.message || "Failed to send password reset email",
+      },
     } as ActionData;
   } catch (error: any) {
     return {
       success: false,
       errors: {
-        general: error.message || 'Network error. Please try again.',
-      }
+        general: error.message || "Network error. Please try again.",
+      },
     } as ActionData;
   }
 }
@@ -141,7 +148,8 @@ export default function ForgotPassword() {
                     </FormControl>
                     <FormMessage />
                   </FormItem>
-                )} />
+                )}
+              />
             </CardContent>
             <CardFooter className="flex flex-col pt-5 space-y-5">
               <Button type="submit" className="w-full" disabled={isSubmitting}>

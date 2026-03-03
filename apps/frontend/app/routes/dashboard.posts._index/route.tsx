@@ -1,8 +1,8 @@
-import type { Post } from "~/features/posts/type";
+import type { Post } from "~/features/posts/types";
 import createColumn from "~/components/layout/table/column/create-column";
 import { DataTable, PageHeader, TablePagination } from "~/components/layout/table/table-list";
 import { useLoaderData, useSearchParams, useActionData, useSubmit } from "react-router";
-import { postApi } from "~/lib/api/posts";
+import { postApi } from "~/features/posts/api";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -42,7 +42,10 @@ export async function action({ request }: { request: Request }) {
         request,
         ids: ids.map((id) => id.toString()),
       });
-      return { success: true, message: `${ids.length} post${ids.length !== 1 ? "s" : ""} deleted successfully` };
+      return {
+        success: true,
+        message: `${ids.length} post${ids.length !== 1 ? "s" : ""} deleted successfully`,
+      };
     }
 
     return { success: false, message: "Invalid action" };

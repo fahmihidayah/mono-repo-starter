@@ -13,15 +13,10 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
-import { categoryApi } from "~/lib/api/category";
+import { categoryApi } from "~/features/category/api";
 import type { ActionData } from "~/types";
 import type { Route } from "./+types/route";
-
-const CategoryFormSchema = z.object({
-  title: z.string().min(1, "Title is required").max(100, "Title must be less than 100 characters"),
-});
-
-type CategoryFormData = z.infer<typeof CategoryFormSchema>;
+import { categoryFormSchema, type CategoryFormSchema } from "~/features/category/types";
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   const id = params.id;
@@ -36,7 +31,7 @@ export async function action({ request, params }: Route.ActionArgs) {
   const id = params.id;
   const formData = await request.formData();
   const data = Object.fromEntries(formData);
-  const validation = CategoryFormSchema.safeParse(data);
+  const validation = categoryFormSchema.safeParse(data);
 
   if (!validation.success) {
     const fieldErrors = validation.error.flatten((issue) => issue.message).fieldErrors;
@@ -67,8 +62,8 @@ export async function action({ request, params }: Route.ActionArgs) {
 
 export default function EditCategoryPage() {
   const { category } = useLoaderData<typeof loader>();
-  const form = useForm<CategoryFormData>({
-    resolver: zodResolver(CategoryFormSchema),
+  const form = useForm<CategoryFormSchema>({
+    resolver: zodResolver(categoryFormSchema),
     defaultValues: {
       title: category.data?.title || "",
     },
@@ -76,7 +71,7 @@ export default function EditCategoryPage() {
 
   const submit = useSubmit();
 
-  const onSubmit = (data: CategoryFormData) => {
+  const onSubmit = (data: CategoryFormSchema) => {
     const formData = new FormData();
     formData.append("title", data.title);
 

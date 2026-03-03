@@ -3,7 +3,7 @@ import type { Route } from "./+types/route";
 import { UpdateProfileForm } from "./update-profile-form";
 import { ChangePasswordForm } from "./change-password-form";
 import { getSession, commitSession } from "~/session.server";
-import { authApi } from "~/lib/api/auth";
+import { authApi } from "~/features/users/api/auth";
 import type { ActionData } from "~/types";
 
 export function meta() {
@@ -150,9 +150,7 @@ export default function SettingsPage({ loaderData }: Route.ComponentProps) {
     <div className="mx-auto py-8 px-8 w-full">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground mt-2">
-          Manage your account settings and preferences
-        </p>
+        <p className="text-muted-foreground mt-2">Manage your account settings and preferences</p>
       </div>
 
       <div className="space-y-6">

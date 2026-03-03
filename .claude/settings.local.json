@@ -12,7 +12,8 @@
       "Bash(pnpm exec react-router typegen:*)",
       "Bash(go build:*)",
       "Bash(pnpm prettier:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(pnpm --filter frontend add:*)"
     ],
     "deny": [],
     "ask": []

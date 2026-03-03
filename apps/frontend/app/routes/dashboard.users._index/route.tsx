@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useLoaderData, useSearchParams, useActionData, useSubmit } from "react-router";
 import { PageHeader, DataTable, TablePagination } from "~/components/layout/table/table-list";
 import createColumn from "~/components/layout/table/column/create-column";
-import type { User } from "~/features/users/type";
-import { userApi } from "~/lib/api/users";
+import type { User } from "~/features/users/types";
+import { userApi } from "~/features/users/api/users";
 import { toast } from "sonner";
 
 // Loader - Fetch users with pagination and search using UserRepository
@@ -18,10 +18,10 @@ export async function loader({ request }: { request: Request }) {
     request,
     page,
     pageSize,
-    search: { email: search }
+    search: { email: search },
   });
 
-  return result
+  return result;
 }
 
 // Action - Handle delete and update operations
@@ -45,7 +45,10 @@ export async function action({ request }: { request: Request }) {
         request,
         ids: ids.map((id) => id.toString()),
       });
-      return { success: true, message: `${ids.length} user${ids.length !== 1 ? "s" : ""} deleted successfully` };
+      return {
+        success: true,
+        message: `${ids.length} user${ids.length !== 1 ? "s" : ""} deleted successfully`,
+      };
     }
 
     return { success: false, message: "Invalid action" };
@@ -56,10 +59,7 @@ export async function action({ request }: { request: Request }) {
 }
 
 export function meta() {
-  return [
-    { title: "User - Dashboard" },
-    { name: "description", content: "Manage your tasks" },
-  ];
+  return [{ title: "User - Dashboard" }, { name: "description", content: "Manage your tasks" }];
 }
 
 export default function DashboardUsersPage() {
@@ -113,7 +113,7 @@ export default function DashboardUsersPage() {
       getItemId: (user) => user.id,
       editLink: (user) => `/dashboard/users/${user.id}`,
       deleteFormAction: "/dashboard/users",
-    }
+    },
   });
 
   // Handle search
@@ -183,7 +183,6 @@ export default function DashboardUsersPage() {
           />
         )}
       </div>
-
     </div>
   );
 }
