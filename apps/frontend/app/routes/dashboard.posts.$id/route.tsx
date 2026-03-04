@@ -3,7 +3,7 @@ import type { Route } from "./+types/route";
 import { postDetailLoader } from "~/features/posts/loaders";
 import { updatePostAction } from "~/features/posts/actions";
 import { PostForm } from "~/features/posts/components";
-import { usePostForm } from "~/features/posts/hooks";
+import { useResourceForm } from "~/lib/hooks";
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   return postDetailLoader({ request, id: params.id });
@@ -15,7 +15,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 
 export default function EditPostPage() {
   const { post, categories } = useLoaderData<typeof loader>();
-  const { handleSubmit, isSubmitting } = usePostForm();
+  const { submitFormSchema, isSubmitting } = useResourceForm();
 
   return (
     <div className="container w-full mx-auto p-5">
@@ -26,7 +26,7 @@ export default function EditPostPage() {
           category_ids: post?.categories?.map((cat) => cat.id) || [],
         }}
         categories={categories}
-        onSubmit={handleSubmit}
+        onSubmit={submitFormSchema}
         isSubmitting={isSubmitting}
         submitButtonText="Update"
       />

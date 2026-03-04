@@ -2,7 +2,7 @@ import { useLoaderData } from "react-router";
 import { postListLoader } from "~/features/posts/loaders";
 import { deletePostAction } from "~/features/posts/actions";
 import { PostList } from "~/features/posts/components";
-import { usePostList } from "~/features/posts/hooks";
+import { useResourceList } from "~/lib/hooks";
 
 export async function loader({ request }: { request: Request }) {
   return postListLoader({ request });
@@ -14,7 +14,9 @@ export async function action({ request }: { request: Request }) {
 
 export default function PostsDashboardPage() {
   const loaderData = useLoaderData<typeof loader>();
-  const { searchValue, handleSearch, handlePageChange, handleBulkDelete } = usePostList();
+  const { searchValue, handleSearch, handlePageChange, handleBulkDelete } = useResourceList({
+    successMessage: "Post created successfully!",
+  });
 
   return (
     <PostList
