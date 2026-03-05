@@ -54,9 +54,13 @@ export class ApiClient<T, F> {
     // 3. localStorage (for client-side)
     const token = options.token || this.defaultToken || getAuthToken();
 
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-    };
+    const headers: Record<string, string> = {};
+
+    // Only set Content-Type for JSON if body is not FormData
+    const isFormData = options.body instanceof FormData;
+    if (!isFormData) {
+      headers["Content-Type"] = "application/json";
+    }
 
     // Add Authorization header if token exists
     if (token) {
@@ -136,11 +140,12 @@ export class ApiClient<T, F> {
     request,
     data,
   }: ApiProps & {
-    data: Partial<F>;
+    data: Partial<F> | FormData;
   }): Promise<BaseResponse<T>> {
     const token = await getToken({ request: request });
     return this.post<T>("", data, {
       token,
+      
     });
   }
 
@@ -189,7 +194,8 @@ export class ApiClient<T, F> {
     return this.request<T>(this.getResourceUrl(endpoint), {
       ...options,
       method: "POST",
-      body: JSON.stringify(data),
+      
+      body: data instanceof FormData ? data : JSON.stringify(data),
     });
   }
 

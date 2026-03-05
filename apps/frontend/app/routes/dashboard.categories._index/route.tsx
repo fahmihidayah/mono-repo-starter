@@ -17,6 +17,7 @@ export default function CategoriesDashboardPage() {
   const { searchValue, handleSearch, handlePageChange, handleBulkDelete } = useResourceList({
     successMessage: "Category created successfully!",
   });
+  
   return (
     <CategoryList
       categories={loaderData.data ?? []}

@@ -1,12 +1,15 @@
 import z from "zod";
 
-export type User = {
+export interface User {
   id: string;
   name: string;
   email: string;
-  createdAt: Date | null;
-  updatedAt: Date | null;
-};
+  password?: string;
+  emailVerified: boolean;
+  image?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 // Zod schema
 export const userFormSchema = z.object({

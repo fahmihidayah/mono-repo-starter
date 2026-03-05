@@ -1,17 +1,7 @@
 import { ApiClient } from "../../../lib/api";
+import type { User, UserFormSchema } from "../types";
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  password?: string;
-  emailVerified: boolean;
-  image?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export const userApi = new ApiClient<User, any>({
+export const userApi = new ApiClient<User, UserFormSchema>({
   resource: "api/users",
   defaultToken: "",
 });
