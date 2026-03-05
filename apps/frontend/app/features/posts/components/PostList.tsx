@@ -67,8 +67,6 @@ export function PostList({
         />
 
         <DataTable
-          title="All Posts"
-          description={`${pagination.totalDocs} post${pagination.totalDocs !== 1 ? "s" : ""} total`}
           data={posts}
           columns={columns}
           enableRowSelection={true}

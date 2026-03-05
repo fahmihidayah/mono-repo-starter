@@ -67,8 +67,6 @@ export function UserList({
         />
 
         <DataTable
-          title="All Users"
-          description={`${pagination.totalDocs} user${pagination.totalDocs !== 1 ? "s" : ""} total`}
           data={users}
           columns={columns}
           enableRowSelection={true}

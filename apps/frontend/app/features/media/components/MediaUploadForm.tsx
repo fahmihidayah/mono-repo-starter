@@ -45,15 +45,30 @@ export function MediaUploadForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 relative ">
       <div className="space-y-2">
-        <Label>Upload Files</Label>
-        <DropZone
-          onFilesSelected={handleFilesSelected}
-          accept="image/*"
-          maxFiles={maxFiles}
-          maxSize={maxSize}
-        />
+        <div className="flex justify-between items-center">
+          <Label>Upload Files</Label>
+          {selectedFiles.length > 0 && (
+            <div className="flex gap-2">
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Uploading..." : "Upload Files"}
+              </Button>
+              <Button type="button" variant="outline" onClick={handleClear} disabled={isSubmitting}>
+                Clear All
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {selectedFiles.length === 0 && (
+          <DropZone
+            onFilesSelected={handleFilesSelected}
+            accept="image/*"
+            maxFiles={maxFiles}
+            maxSize={maxSize}
+          />
+        )}
       </div>
 
       {selectedFiles.length > 0 && (
@@ -73,23 +88,7 @@ export function MediaUploadForm({
               placeholder="Describe the images for accessibility"
               disabled={isSubmitting}
             />
-            <p className="text-xs text-gray-500">
-              Provide a description for accessibility and SEO
-            </p>
-          </div>
-
-          <div className="flex gap-2">
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Uploading..." : "Upload Files"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClear}
-              disabled={isSubmitting}
-            >
-              Clear All
-            </Button>
+            <p className="text-xs text-gray-500">Provide a description for accessibility and SEO</p>
           </div>
         </>
       )}

@@ -13,7 +13,7 @@ interface DropZoneProps {
 export function DropZone({
   onFilesSelected,
   accept = "image/*",
-  maxFiles = 10,
+  maxFiles = 1,
   maxSize = 5 * 1024 * 1024, // 5MB default
   className,
 }: DropZoneProps) {
@@ -123,12 +123,10 @@ export function DropZone({
             <span className="text-primary">Click to upload</span> or drag and drop
           </p>
           <p className="text-xs text-gray-500">
-            {accept === "image/*" ? "Images" : "Files"} up to{" "}
-            {(maxSize / (1024 * 1024)).toFixed(0)}MB
+            {accept === "image/*" ? "Images" : "Files"} up to {(maxSize / (1024 * 1024)).toFixed(0)}
+            MB
           </p>
-          {maxFiles > 1 && (
-            <p className="text-xs text-gray-500 mt-1">Maximum {maxFiles} files</p>
-          )}
+          {maxFiles > 1 && <p className="text-xs text-gray-500 mt-1">Maximum {maxFiles} files</p>}
         </div>
       </div>
 

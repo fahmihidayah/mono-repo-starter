@@ -80,8 +80,6 @@ export function MediaList({
         />
 
         <DataTable
-          title="All Media"
-          description={`${pagination.totalDocs} media file${pagination.totalDocs !== 1 ? "s" : ""} total`}
           data={media}
           columns={columns}
           searchPlaceholder="Search media files..."

@@ -1,11 +1,8 @@
 import { redirect } from "react-router";
-import { getToken } from "~/lib/utils.server";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+import { mediaApi } from "../api";
 
 export async function uploadMediaAction({ request }: { request: Request }) {
   const formData = await request.formData();
-  const token = await getToken({ request });
 
   // Get all files from the form
   const files = formData.getAll("files") as File[];
@@ -31,20 +28,13 @@ export async function uploadMediaAction({ request }: { request: Request }) {
       }
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/media`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: fileFormData,
-        });
+        const result = await mediaApi.create({ request, data: fileFormData });
 
-        if (response.ok) {
+        if (result.code === 200 || result.code === 201) {
           successCount++;
         } else {
           failCount++;
-          const errorData = await response.json();
-          console.error(`Failed to upload ${file.name}:`, errorData.message);
+          console.error(`Failed to upload ${file.name}:`, result.message);
         }
       } catch (error) {
         failCount++;

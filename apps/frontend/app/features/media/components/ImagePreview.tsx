@@ -12,7 +12,7 @@ export function ImagePreview({ files, onRemove, className }: ImagePreviewProps) 
 
   return (
     <div className={cn("w-full", className)}>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {files.map((file, index) => (
           <FilePreviewCard
             key={`${file.name}-${index}`}

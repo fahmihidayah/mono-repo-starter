@@ -38,8 +38,6 @@ import {
 } from "~/components/ui/alert-dialog";
 
 export interface DataTableProps<TData> {
-  title: string;
-  description?: string;
   data: TData[];
   columns: ColumnDef<TData>[];
   searchable?: boolean;
@@ -55,8 +53,6 @@ export interface DataTableProps<TData> {
 }
 
 export function DataTable<TData>({
-  title,
-  description,
   data,
   columns,
   searchable = true,
@@ -136,10 +132,6 @@ export function DataTable<TData>({
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <CardTitle>{title}</CardTitle>
-          {description && <CardDescription>{description}</CardDescription>}
-        </div>
         <div className="flex items-center gap-2">
           {enableRowSelection && selectedCount > 0 && (
             <Button

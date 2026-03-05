@@ -67,8 +67,6 @@ export function CategoryList({
         />
 
         <DataTable
-          title="All Categories"
-          description={`${pagination.totalDocs} ${pagination.totalDocs !== 1 ? "categories" : "category"} total`}
           data={categories}
           columns={columns}
           enableRowSelection={true}
