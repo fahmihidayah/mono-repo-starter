@@ -27,7 +27,7 @@ type IUserService interface {
 	GetByEmail(ctx context.Context, email string) (*domain.User, error)
 	Update(ctx context.Context, req *request.UpdateUserRequest) (*domain.User, error)
 	Delete(ctx context.Context, id string) error
-	DeleteAll(ctx context.Context, req *request.BulkDeleteRequest) error
+	DeleteAll(ctx context.Context, ids []string) error
 	GetAll(ctx context.Context, filter *request.FilterUserRequest) ([]domain.User, int64, error)
 	Verify(ctx context.Context, req *request.VerifyUserRequest) error
 	HandleFailedLogin(ctx context.Context, userID string) error
@@ -282,25 +282,20 @@ func (s *UserServiceImpl) Delete(ctx context.Context, id string) error {
 }
 
 // DeleteAll deletes multiple users by their IDs
-func (s *UserServiceImpl) DeleteAll(ctx context.Context, req *request.BulkDeleteRequest) error {
-	// Validate request
-	if err := s.validate.Struct(req); err != nil {
-		return errors.New("validation failed: IDs array is required and cannot be empty")
-	}
-
+func (s *UserServiceImpl) DeleteAll(ctx context.Context, ids []string) error {
 	// Check if IDs array is empty
-	if len(req.IDs) == 0 {
+	if len(ids) == 0 {
 		return errors.New("IDs array cannot be empty")
 	}
 
 	// Validate that all IDs are non-empty
-	for _, id := range req.IDs {
+	for _, id := range ids {
 		if id == "" {
 			return errors.New("invalid ID: empty ID in array")
 		}
 	}
 
-	return s.userRepository.DeleteAll(ctx, req.IDs)
+	return s.userRepository.DeleteAll(ctx, ids)
 }
 
 // GetAll retrieves a paginated list of users with total count

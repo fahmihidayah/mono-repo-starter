@@ -246,18 +246,12 @@ func (c *UserController) DeleteMany(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ids, hasIDs := params.GetFilterIDs()
-	idJsons, _ := json.Marshal(ids)
-	log.Printf("ids %s", idJsons)
 	if !hasIDs {
 		c.SendBadRequest(w, "Missing id filter")
 		return
 	}
 
-	bulkDeleteReq := &userRequest.BulkDeleteRequest{
-		IDs: ids,
-	}
-
-	if err := c.userService.DeleteAll(r.Context(), bulkDeleteReq); err != nil {
+	if err := c.userService.DeleteAll(r.Context(), ids); err != nil {
 		c.SendBadRequest(w, err.Error())
 		return
 	}
