@@ -1,4 +1,4 @@
-package users
+package request
 
 // FilterUserRequest represents the query parameters for filtering users
 type FilterUserRequest struct {

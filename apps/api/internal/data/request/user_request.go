@@ -1,4 +1,4 @@
-package users
+package request
 
 // CreateUserRequest represents the request body for user registration
 type CreateUserRequest struct {

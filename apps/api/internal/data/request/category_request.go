@@ -1,4 +1,4 @@
-package categories
+package request
 
 // CreateCategoryRequest represents the request body for creating a category
 type CreateCategoryRequest struct {

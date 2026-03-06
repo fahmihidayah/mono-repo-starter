@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	postRequest "github.com/fahmihidayah/go-api-orchestrator/internal/data/request/posts"
+	postRequest "github.com/fahmihidayah/go-api-orchestrator/internal/data/request"
 	"github.com/fahmihidayah/go-api-orchestrator/internal/middleware"
 	"github.com/fahmihidayah/go-api-orchestrator/internal/service"
 )

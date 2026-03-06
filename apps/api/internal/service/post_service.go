@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	request "github.com/fahmihidayah/go-api-orchestrator/internal/data/request/posts"
+	request "github.com/fahmihidayah/go-api-orchestrator/internal/data/request"
 	"github.com/fahmihidayah/go-api-orchestrator/internal/domain"
 	"github.com/fahmihidayah/go-api-orchestrator/internal/repository"
 	"github.com/fahmihidayah/go-api-orchestrator/internal/utils"

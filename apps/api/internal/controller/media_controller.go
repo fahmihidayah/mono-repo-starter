@@ -6,7 +6,7 @@ import (
 	"mime/multipart"
 	"net/http"
 
-	mediaRequest "github.com/fahmihidayah/go-api-orchestrator/internal/data/request/media"
+	mediaRequest "github.com/fahmihidayah/go-api-orchestrator/internal/data/request"
 	"github.com/fahmihidayah/go-api-orchestrator/internal/service"
 )
 

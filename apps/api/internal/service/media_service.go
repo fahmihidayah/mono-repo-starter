@@ -6,7 +6,7 @@ import (
 	"mime/multipart"
 
 	"github.com/fahmihidayah/go-api-orchestrator/internal/config"
-	request "github.com/fahmihidayah/go-api-orchestrator/internal/data/request/media"
+	request "github.com/fahmihidayah/go-api-orchestrator/internal/data/request"
 	"github.com/fahmihidayah/go-api-orchestrator/internal/domain"
 	"github.com/fahmihidayah/go-api-orchestrator/internal/repository"
 	"github.com/fahmihidayah/go-api-orchestrator/internal/storage"

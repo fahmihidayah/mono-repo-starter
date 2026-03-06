@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	request "github.com/fahmihidayah/go-api-orchestrator/internal/data/request/users"
+	request "github.com/fahmihidayah/go-api-orchestrator/internal/data/request"
 	"github.com/fahmihidayah/go-api-orchestrator/internal/middleware"
 	"github.com/fahmihidayah/go-api-orchestrator/internal/service"
 	"github.com/fahmihidayah/go-api-orchestrator/internal/utils"

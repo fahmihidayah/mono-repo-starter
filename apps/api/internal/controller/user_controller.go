@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	userRequest "github.com/fahmihidayah/go-api-orchestrator/internal/data/request/users"
+	userRequest "github.com/fahmihidayah/go-api-orchestrator/internal/data/request"
 	"github.com/fahmihidayah/go-api-orchestrator/internal/service"
 )
 

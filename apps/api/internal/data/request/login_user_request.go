@@ -1,4 +1,4 @@
-package users
+package request
 
 // LoginUserRequest represents the request body for user login
 type LoginUserRequest struct {

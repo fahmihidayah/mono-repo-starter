@@ -1,4 +1,4 @@
-package posts
+package request
 
 // CreatePostRequest represents the request body for creating a post
 type CreatePostRequest struct {

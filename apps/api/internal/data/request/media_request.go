@@ -1,4 +1,4 @@
-package media
+package request
 
 import "mime/multipart"
 

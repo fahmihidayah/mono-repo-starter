@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	categoryRequest "github.com/fahmihidayah/go-api-orchestrator/internal/data/request/categories"
+	categoryRequest "github.com/fahmihidayah/go-api-orchestrator/internal/data/request"
 	"github.com/fahmihidayah/go-api-orchestrator/internal/service"
 )
 

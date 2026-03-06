@@ -1,4 +1,4 @@
-package users
+package request
 
 type InitialResetPasswordUser struct {
 	Email string `json:"email" validate:"required,email" binding:"required,email" example:"fahmi@gmail.com"`

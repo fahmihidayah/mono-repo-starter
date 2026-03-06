@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/fahmihidayah/go-api-orchestrator/internal/config"
-	request "github.com/fahmihidayah/go-api-orchestrator/internal/data/request/users"
+	request "github.com/fahmihidayah/go-api-orchestrator/internal/data/request"
 	"github.com/fahmihidayah/go-api-orchestrator/internal/data/response"
 	"github.com/fahmihidayah/go-api-orchestrator/internal/domain"
 	"github.com/fahmihidayah/go-api-orchestrator/internal/mail"

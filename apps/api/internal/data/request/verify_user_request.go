@@ -1,4 +1,4 @@
-package users
+package request
 
 type VerifyUserRequest struct {
 	Email            string `json:"email" validate:"omitempty,email" binding:"omitempty,email"`
