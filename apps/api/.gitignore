@@ -11,7 +11,6 @@ main
 tmp/
 
 # API-specific database files (if any)
-data/
 *.db-journal
 
 # API-specific logs

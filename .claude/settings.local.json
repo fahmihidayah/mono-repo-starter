@@ -15,7 +15,11 @@
       "Bash(mkdir:*)",
       "Bash(pnpm --filter frontend add:*)",
       "Bash(pnpm --filter frontend tsc:*)",
-      "Bash(pnpm exec tsc:*)"
+      "Bash(pnpm exec tsc:*)",
+      "Bash(tree:*)",
+      "Bash(grep:*)",
+      "Bash(go test:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
