@@ -45,7 +45,7 @@ export function useResourceForm(config?: UseResourceFormConfig) {
     if (config?.onSubmit) {
       config.onSubmit(formData);
     }
-    submit(formData, { method: "post" });
+    submit(formData, { method: "post", encType: "multipart/form-data" });
   };
 
   return {

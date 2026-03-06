@@ -55,9 +55,11 @@ export default function DashboardRoute() {
           subtitle: "Starter app",
         },
         headerTitle: "Main",
+
         navigationGroups: [
           {
             label: "Main",
+            collapsible: true,
             items: [
               {
                 title: "Home",

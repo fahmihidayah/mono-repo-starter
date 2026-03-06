@@ -13,6 +13,8 @@ export const defaultHeaderConfig: SidebarHeaderConfig = {
 export const defaultNavigationGroups: NavigationGroup[] = [
   {
     label: "Navigation",
+    collapsible: true,
+    defaultOpen: true,
     items: [
       {
         title: "Overview",
@@ -38,6 +40,8 @@ export const defaultNavigationGroups: NavigationGroup[] = [
   },
   {
     label: "Quick Links",
+    collapsible: true,
+    defaultOpen: true,
     items: [
       {
         title: "Home",

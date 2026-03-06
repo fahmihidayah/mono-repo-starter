@@ -1,3 +1,5 @@
+import z from "zod";
+
 export type Media = {
   id: string;
   alt: string | null;
@@ -12,7 +14,17 @@ export type Media = {
   updated_at: number | null;
 };
 
-export type MediaFormSchema = {
-  alt?: string | null;
-  url?: string | null;
-};
+export const mediaFormSchema = z.object({
+  image: z
+    .custom<File>((val) => val instanceof File, {
+      message: "Image is required",
+    })
+    .refine((file) => file.size > 0, { message: "File cannot be empty" })
+    .refine((file) => file.size <= 5 * 1024 * 1024, { message: "Max file size is 5MB" })
+    .refine((file) => ["image/jpeg", "image/png", "image/webp"].includes(file.type), {
+      message: "Only .jpg, .png, .webp formats are allowed",
+    }),
+  alt: z.string().optional(),
+});
+
+export type MediaFormSchema = z.infer<typeof mediaFormSchema>;

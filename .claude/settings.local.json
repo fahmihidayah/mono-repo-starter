@@ -13,7 +13,9 @@
       "Bash(go build:*)",
       "Bash(pnpm prettier:*)",
       "Bash(mkdir:*)",
-      "Bash(pnpm --filter frontend add:*)"
+      "Bash(pnpm --filter frontend add:*)",
+      "Bash(pnpm --filter frontend tsc:*)",
+      "Bash(pnpm exec tsc:*)"
     ],
     "deny": [],
     "ask": []
