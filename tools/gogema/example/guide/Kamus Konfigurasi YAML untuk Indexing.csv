@@ -1,0 +1,4 @@
+Property,Type,Deskripsi,Aturan Penulisan
+name,String,Nama fisik index di DB,Format: idx_[table]_[columns]
+columns,List,Daftar kolom yang di-index,"Harus menggunakan nama kolom di database (db), bukan name di Go"
+unique,Bool,Apakah index harus unik,Gunakan untuk index gabungan yang unik

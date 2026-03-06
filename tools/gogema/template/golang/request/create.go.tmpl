@@ -1,0 +1,7 @@
+package {{ .TableName }}
+
+type Create{{ .ModelName }}Request struct {
+{{- range .Fields }}
+	{{ .Name }} {{ .Type }} `json:"{{ .JSON }}" validate:"required"`
+{{- end }}
+}

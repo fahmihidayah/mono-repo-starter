@@ -1,0 +1,26 @@
+package server
+
+import (
+    "github.com/go-chi/chi/v5"
+)
+
+{{- $modelName := .Name }}
+{{- $lowerModelName := .Name | lower }}
+
+func (server *Server) {{ $lowerModelName }}Route(r chi.Router) {
+    r.Route("/{{ $lowerModelName }}s", func(r chi.Router) {
+        // All React Admin routes require authentication
+        r.Use(server.authMiddleware)
+
+        // Handle bulk operations first (detected by query parameters in controller)
+        r.Delete("/", server.{{ $lowerModelName }}Controller.DeleteMany)
+        r.Put("/", server.{{ $lowerModelName }}Controller.UpdateMany)
+
+        // Handle standard resource operations
+        r.Get("/", server.{{ $lowerModelName }}Controller.GetList)       // getList or getMany
+        r.Post("/", server.{{ $lowerModelName }}Controller.Create)       // create
+        r.Get("/{id}", server.{{ $lowerModelName }}Controller.GetOne)    // getOne
+        r.Put("/{id}", server.{{ $lowerModelName }}Controller.Update)    // update
+        r.Delete("/{id}", server.{{ $lowerModelName }}Controller.Delete) // delete
+    })
+}

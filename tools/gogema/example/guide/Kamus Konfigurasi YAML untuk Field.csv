@@ -1,0 +1,16 @@
+Property,Type,Deskripsi,Aturan Penulisan
+name,String,Nama field di struct Go,PascalCase (Contoh: UserID)
+type,String,Tipe data di Go,"uint, string, int64, bool, time.Time"
+json,String,Nama field di output JSON,"snake_case. Gunakan - untuk menyembunyikan, atau tambahkan ,omitempty"
+db,String,Nama kolom di Database,snake_case (Contoh: created_at)
+primary_key,Bool,Menandai sebagai Primary Key,true atau false
+auto_increment,Bool,Auto-fill ID (Serial),Hanya untuk tipe numerik (uint/int64)
+length,Int,Panjang karakter (Varchar),"Jika kosong, generator bisa default ke 255"
+nullable,Bool,Apakah kolom boleh NULL,"Jika true, generator wajib memakai pointer (*) di Go"
+unique,Bool,Membuat index unik,Otomatis menambah uniqueIndex pada tag GORM
+required,Bool,Validasi wajib isi,"Digunakan untuk tag validate:""required"""
+default,Mixed,Nilai awal di database,"Contoh: ""pending"", 0, false"
+type_override,String,Paksa tipe data SQL spesifik,"Contoh: text (untuk string panjang), jsonb"
+auto_now_add,Bool,Auto-fill saat baris dibuat,Hanya untuk time.Time (GORM autoCreateTime)
+auto_now,Bool,Auto-fill setiap ada update,Hanya untuk time.Time (GORM autoUpdateTime)
+request,Bool,Apakah akan digunakan untuk request

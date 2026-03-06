@@ -1,0 +1,9 @@
+Property,Type,Deskripsi,Aturan Penulisan
+name,String,Nama field relasi di Go,"PascalCase (Contoh: Author, Categories)"
+type,Enum,Jenis hubungan GORM,"belongs_to, has_many, has_one, many_to_many"
+model,String,Nama struct target,Harus sesuai dengan name di file YAML target
+foreign_key,String,Kolom kunci di tabel lokal,Contoh: author_id pada model Post
+references,String,Kolom kunci di tabel target,Default: id
+on_delete,Enum,Aksi saat induk dihapus,"CASCADE, SET NULL, RESTRICT, NO ACTION"
+on_update,Enum,Aksi saat induk berubah,Umumnya CASCADE
+join_table,String,Nama tabel penghubung,Wajib diisi hanya untuk many_to_many
