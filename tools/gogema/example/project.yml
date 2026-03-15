@@ -1,7 +1,0 @@
-# project.yml
-project:
-  name: BlogGo
-  package: github.com/fahmihidayah/go-api
-  version: 1.0.0
-  author: Fahmi
-  directory: ../blog-go/internal

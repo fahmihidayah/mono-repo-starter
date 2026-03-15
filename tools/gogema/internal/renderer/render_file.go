@@ -1,5 +1,0 @@
-package renderer
-
-func RenderFile() {
-
-}
