@@ -23,22 +23,29 @@ type IRoleService interface {
 	GetWithQueryParams(ctx context.Context, queryParams *utils.QueryParams) ([]*domain.Role, *utils.PaginateInfo, error)
 	GetByIDs(ctx context.Context, ids []string) ([]domain.Role, error)
 	UpdateMany(ctx context.Context, ids []string, updates map[string]interface{}) ([]string, error)
+	// Permission management
+	AddPermissions(ctx context.Context, roleID string, permissionIDs []string) error
+	RemovePermissions(ctx context.Context, roleID string, permissionIDs []string) error
+	GetPermissions(ctx context.Context, roleID string) ([]*domain.Permission, error)
 }
 
 type RoleServiceImpl struct {
-	roleRepository repository.IRoleRepository
-	validator      *validator.Validate
-	config         *config.Config
+	roleRepository       repository.IRoleRepository
+	permissionRepository repository.IPermissionRepository
+	validator            *validator.Validate
+	config               *config.Config
 }
 
 func RoleServiceProvider(
 	roleRepository repository.IRoleRepository,
+	permissionRepository repository.IPermissionRepository,
 	config *config.Config,
 ) IRoleService {
 	return &RoleServiceImpl{
-		roleRepository: roleRepository,
-		validator:      validator.New(),
-		config:         config,
+		roleRepository:       roleRepository,
+		permissionRepository: permissionRepository,
+		validator:            validator.New(),
+		config:               config,
 	}
 }
 
@@ -201,4 +208,67 @@ func (s *RoleServiceImpl) UpdateMany(ctx context.Context, ids []string, updates 
 	}
 
 	return updatedIDs, nil
+}
+
+// AddPermissions adds permissions to a role
+func (s *RoleServiceImpl) AddPermissions(ctx context.Context, roleID string, permissionIDs []string) error {
+	if len(permissionIDs) == 0 {
+		return errors.New("permission IDs array cannot be empty")
+	}
+
+	// Verify role exists
+	_, err := s.roleRepository.GetByID(ctx, roleID)
+	if err != nil {
+		return err
+	}
+
+	// Get all permissions by their IDs
+	permissions := make([]*domain.Permission, 0, len(permissionIDs))
+	for _, permID := range permissionIDs {
+		perm, err := s.permissionRepository.GetByID(ctx, permID)
+		if err != nil {
+			continue // Skip permissions that don't exist
+		}
+		permissions = append(permissions, perm)
+	}
+
+	if len(permissions) == 0 {
+		return errors.New("no valid permissions found")
+	}
+
+	return s.roleRepository.AddPermissions(ctx, roleID, permissions)
+}
+
+// RemovePermissions removes permissions from a role
+func (s *RoleServiceImpl) RemovePermissions(ctx context.Context, roleID string, permissionIDs []string) error {
+	if len(permissionIDs) == 0 {
+		return errors.New("permission IDs array cannot be empty")
+	}
+
+	// Verify role exists
+	_, err := s.roleRepository.GetByID(ctx, roleID)
+	if err != nil {
+		return err
+	}
+
+	// Get all permissions by their IDs
+	permissions := make([]*domain.Permission, 0, len(permissionIDs))
+	for _, permID := range permissionIDs {
+		perm, err := s.permissionRepository.GetByID(ctx, permID)
+		if err != nil {
+			continue // Skip permissions that don't exist
+		}
+		permissions = append(permissions, perm)
+	}
+
+	if len(permissions) == 0 {
+		return errors.New("no valid permissions found")
+	}
+
+	return s.roleRepository.RemovePermissions(ctx, roleID, permissions)
+}
+
+// GetPermissions retrieves all permissions for a role
+func (s *RoleServiceImpl) GetPermissions(ctx context.Context, roleID string) ([]*domain.Permission, error) {
+	return s.roleRepository.GetPermissions(ctx, roleID)
 }

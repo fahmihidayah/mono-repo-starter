@@ -20,6 +20,9 @@ type IRoleRepository interface {
 	DeleteAll(ctx context.Context, ids []string) error
 	Count(ctx context.Context) (int64, error)
 	CountByQuery(ctx context.Context, queryParams *utils.QueryParams) (int64, error)
+	AddPermissions(ctx context.Context, roleID string, permissions []*domain.Permission) error
+	RemovePermissions(ctx context.Context, roleID string, permissions []*domain.Permission) error
+	GetPermissions(ctx context.Context, roleID string) ([]*domain.Permission, error)
 }
 
 type RoleRepositoryImpl struct {
@@ -138,4 +141,40 @@ func (r *RoleRepositoryImpl) Update(ctx context.Context, data *domain.Role) erro
 		return errors.New("role not found or no changes made")
 	}
 	return nil
+}
+
+func (r *RoleRepositoryImpl) AddPermissions(ctx context.Context, roleID string, permissions []*domain.Permission) error {
+	var role domain.Role
+	if err := r.db.WithContext(ctx).First(&role, "id = ?", roleID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errors.New("role not found")
+		}
+		return err
+	}
+
+	return r.db.WithContext(ctx).Model(&role).Association("Permissions").Append(permissions)
+}
+
+func (r *RoleRepositoryImpl) RemovePermissions(ctx context.Context, roleID string, permissions []*domain.Permission) error {
+	var role domain.Role
+	if err := r.db.WithContext(ctx).First(&role, "id = ?", roleID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errors.New("role not found")
+		}
+		return err
+	}
+
+	return r.db.WithContext(ctx).Model(&role).Association("Permissions").Delete(permissions)
+}
+
+func (r *RoleRepositoryImpl) GetPermissions(ctx context.Context, roleID string) ([]*domain.Permission, error) {
+	var role domain.Role
+	if err := r.db.WithContext(ctx).Preload("Permissions").First(&role, "id = ?", roleID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("role not found")
+		}
+		return nil, err
+	}
+
+	return role.Permissions, nil
 } 

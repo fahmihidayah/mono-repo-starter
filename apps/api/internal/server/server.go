@@ -19,15 +19,16 @@ import (
 )
 
 type Server struct {
-	port               int
-	config             *config.Config
-	authMiddleware     func(http.Handler) http.Handler
-	authController     *controller.AuthUserController
-	userController     *controller.UserController
-	postController     *controller.PostController
-	categoryController *controller.CategoryController
-	mediaController    *controller.MediaController
-	roleController     *controller.RoleController
+	port                 int
+	config               *config.Config
+	authMiddleware       func(http.Handler) http.Handler
+	authController       *controller.AuthUserController
+	userController       *controller.UserController
+	postController       *controller.PostController
+	categoryController   *controller.CategoryController
+	mediaController      *controller.MediaController
+	roleController       *controller.RoleController
+	permissionController *controller.PermissionController
 	// React Admin controllers
 }
 
@@ -39,6 +40,7 @@ func NewServer() *http.Server {
 
 	userRepository := repository.UserRepositoryProvider(db)
 	roleRepository := repository.RoleRepositoryProvider(db)
+	permissionRepository := repository.PermissionRepositoryProvider(db)
 	tokenBlacklistRepository := repository.TokenBlacklistRepositoryProvider(db)
 	postRepository := repository.PostRepositoryProvider(db)
 	categoryRepository := repository.CategoryRepositoryProvider(db)
@@ -57,7 +59,11 @@ func NewServer() *http.Server {
 	)
 
 	roleService := service.RoleServiceProvider(
-		roleRepository, config,
+		roleRepository, permissionRepository, config,
+	)
+
+	permissionService := service.PermissionServiceProvider(
+		permissionRepository, config,
 	)
 
 	// Initialize storage (local or S3 based on config)
@@ -91,6 +97,9 @@ func NewServer() *http.Server {
 		),
 		roleController: controller.RoleControllerProvider(
 			roleService,
+		),
+		permissionController: controller.PermissionControllerProvider(
+			permissionService,
 		),
 	}
 

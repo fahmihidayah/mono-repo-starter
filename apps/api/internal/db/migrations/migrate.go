@@ -24,6 +24,7 @@ func AutoMigrate(db *gorm.DB) error {
 		&domain.Media{},
 		&domain.TokenBlacklist{},
 		&domain.Role{},
+		&domain.Permission{},
 	)
 
 	if err != nil {
@@ -39,11 +40,11 @@ func AutoMigrate(db *gorm.DB) error {
 func DropAllTables(db *gorm.DB) error {
 	log.Println("Dropping all tables...")
 
-	// Drop join table first (many-to-many relationship)
-	err := db.Migrator().DropTable("post_categories")
+	// Drop join tables first (many-to-many relationships)
+	err := db.Migrator().DropTable("post_categories", "role_permissions")
 	if err != nil {
-		log.Printf("Failed to drop join table: %v", err)
-		// Continue anyway - table might not exist
+		log.Printf("Failed to drop join tables: %v", err)
+		// Continue anyway - tables might not exist
 	}
 
 	// Drop main tables
@@ -56,6 +57,8 @@ func DropAllTables(db *gorm.DB) error {
 		&domain.Category{},
 		&domain.Media{},
 		&domain.TokenBlacklist{},
+		&domain.Role{},
+		&domain.Permission{},
 	)
 
 	if err != nil {

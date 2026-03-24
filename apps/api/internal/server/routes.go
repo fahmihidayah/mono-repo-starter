@@ -42,6 +42,7 @@ func (server *Server) RegisterRoutes() http.Handler {
 		server.mediaRoute(r)
 		server.categoryRoute(r)
 		server.roleRoute(r)
+		server.permissionRoute(r)
 	})
 
 	return r

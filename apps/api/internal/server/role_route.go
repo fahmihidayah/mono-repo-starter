@@ -19,5 +19,10 @@ func (server *Server) roleRoute(r chi.Router) {
 		r.Get("/{id}", server.roleController.GetOne)    // getOne
 		r.Put("/{id}", server.roleController.Update)    // update
 		r.Delete("/{id}", server.roleController.Delete) // delete
+
+		// Permission management
+		r.Get("/{id}/permissions", server.roleController.GetPermissions)       // get role permissions
+		r.Post("/{id}/permissions", server.roleController.AddPermissions)      // add permissions to role
+		r.Delete("/{id}/permissions", server.roleController.RemovePermissions) // remove permissions from role
 	})
 }

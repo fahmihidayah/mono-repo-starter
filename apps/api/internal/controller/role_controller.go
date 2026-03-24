@@ -286,3 +286,100 @@ func (c *RoleController) DeleteMany(w http.ResponseWriter, r *http.Request) {
 
 	c.SendIDs(w, ids)
 }
+
+// AddPermissions handles adding permissions to a role - POST /roles/{id}/permissions
+// @Summary Add permissions to a role
+// @Description Add multiple permissions to a role by their IDs
+// @Tags roles
+// @Accept json
+// @Produce json
+// @Param id path string true "Role ID"
+// @Param request body map[string]interface{} true "Permission IDs array, e.g., {\"permission_ids\":[\"1\",\"2\"]}"
+// @Success 200 {object} response.WebResponse "Permissions added successfully"
+// @Failure 400 {object} response.WebResponse "Invalid request or ID required"
+// @Security BearerAuth
+// @Router /api/roles/{id}/permissions [post]
+func (c *RoleController) AddPermissions(w http.ResponseWriter, r *http.Request) {
+	id := c.GetIDFromURL(r)
+	if id == "" {
+		c.SendBadRequest(w, "ID is required")
+		return
+	}
+
+	var req struct {
+		PermissionIDs []string `json:"permission_ids"`
+	}
+	if err := c.DecodeJSONBody(r, &req); err != nil {
+		c.SendBadRequest(w, "Invalid request body")
+		return
+	}
+
+	if err := c.roleService.AddPermissions(r.Context(), id, req.PermissionIDs); err != nil {
+		c.SendBadRequest(w, err.Error())
+		return
+	}
+
+	c.SendOne(w, map[string]string{"message": "Permissions added successfully"})
+}
+
+// RemovePermissions handles removing permissions from a role - DELETE /roles/{id}/permissions
+// @Summary Remove permissions from a role
+// @Description Remove multiple permissions from a role by their IDs
+// @Tags roles
+// @Accept json
+// @Produce json
+// @Param id path string true "Role ID"
+// @Param request body map[string]interface{} true "Permission IDs array, e.g., {\"permission_ids\":[\"1\",\"2\"]}"
+// @Success 200 {object} response.WebResponse "Permissions removed successfully"
+// @Failure 400 {object} response.WebResponse "Invalid request or ID required"
+// @Security BearerAuth
+// @Router /api/roles/{id}/permissions [delete]
+func (c *RoleController) RemovePermissions(w http.ResponseWriter, r *http.Request) {
+	id := c.GetIDFromURL(r)
+	if id == "" {
+		c.SendBadRequest(w, "ID is required")
+		return
+	}
+
+	var req struct {
+		PermissionIDs []string `json:"permission_ids"`
+	}
+	if err := c.DecodeJSONBody(r, &req); err != nil {
+		c.SendBadRequest(w, "Invalid request body")
+		return
+	}
+
+	if err := c.roleService.RemovePermissions(r.Context(), id, req.PermissionIDs); err != nil {
+		c.SendBadRequest(w, err.Error())
+		return
+	}
+
+	c.SendOne(w, map[string]string{"message": "Permissions removed successfully"})
+}
+
+// GetPermissions handles getting all permissions for a role - GET /roles/{id}/permissions
+// @Summary Get permissions for a role
+// @Description Retrieve all permissions assigned to a role
+// @Tags roles
+// @Accept json
+// @Produce json
+// @Param id path string true "Role ID"
+// @Success 200 {array} domain.Permission "List of permissions"
+// @Failure 400 {object} response.WebResponse "ID is required"
+// @Failure 404 {object} response.WebResponse "Role not found"
+// @Router /api/roles/{id}/permissions [get]
+func (c *RoleController) GetPermissions(w http.ResponseWriter, r *http.Request) {
+	id := c.GetIDFromURL(r)
+	if id == "" {
+		c.SendBadRequest(w, "ID is required")
+		return
+	}
+
+	permissions, err := c.roleService.GetPermissions(r.Context(), id)
+	if err != nil {
+		c.SendNotFound(w, err.Error())
+		return
+	}
+
+	c.SendOne(w, permissions)
+}
