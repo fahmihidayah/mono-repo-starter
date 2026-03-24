@@ -65,7 +65,10 @@ migrate-fresh:
 	go run cmd/migrate/main.go -action=fresh
 
 migrate-seed:
-	@echo "Seeding database..."
+	@echo "Seeding database with default data..."
+	@echo "  • Admin role"
+	@echo "  • User role"
+	@echo "  • Admin user: admin@fahmi.com / Test@1234"
 	go run cmd/migrate/main.go -action=seed
 
 migrate-status:
@@ -73,6 +76,7 @@ migrate-status:
 	go run cmd/migrate/main.go -action=status
 
 # Hot reload for development (requires air)
+# Note: Migrations are now run automatically on server startup
 dev:
 	@echo "Starting with hot reload (Air)..."
 	@if [ ! -f ~/go/bin/air ]; then \
@@ -80,6 +84,12 @@ dev:
 		go install github.com/air-verse/air@latest; \
 		echo "✓ Air installed successfully"; \
 	fi
+	@~/go/bin/air
+
+# Development without auto-migrations (run migrations manually first)
+dev-no-migrate:
+	@echo "Starting without auto-migrations..."
+	@echo "Note: Make sure to run 'make migrate-up' first if needed"
 	@~/go/bin/air
 
 # Initialize Air with default config (run once)
@@ -191,7 +201,7 @@ help:
 	@echo "  make migrate-up      - Run database migrations"
 	@echo "  make migrate-down    - Rollback all migrations"
 	@echo "  make migrate-fresh   - Drop all tables and re-migrate"
-	@echo "  make migrate-seed    - Seed database with initial data"
+	@echo "  make migrate-seed    - Seed database with default roles and admin user (admin@fahmi.com / Test@1234)"
 	@echo "  make migrate-status  - Check migration status"
 	@echo ""
 	@echo "Testing:"

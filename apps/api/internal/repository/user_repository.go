@@ -59,7 +59,7 @@ func (r *UserRepositoryImpl) GetByID(ctx context.Context, id string) (*domain.Us
 // GetByEmail retrieves a user by their email address
 func (r *UserRepositoryImpl) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
 	var user domain.User
-	if err := r.db.WithContext(ctx).Where("email = ?", email).First(&user).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("Role").Where("email = ?", email).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("user not found")
 		}

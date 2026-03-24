@@ -19,7 +19,12 @@
       "Bash(tree:*)",
       "Bash(grep:*)",
       "Bash(go test:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(pnpm dev)",
+      "Bash(curl:*)",
+      "Bash(go run:*)",
+      "Bash(make migrate-seed:*)",
+      "Bash(make help:*)"
     ],
     "deny": [],
     "ask": []

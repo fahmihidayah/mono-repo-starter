@@ -27,6 +27,7 @@ type Server struct {
 	postController     *controller.PostController
 	categoryController *controller.CategoryController
 	mediaController    *controller.MediaController
+	roleController     *controller.RoleController
 	// React Admin controllers
 }
 
@@ -37,6 +38,7 @@ func NewServer() *http.Server {
 	mailer := mail.MailerProvider(config, mail.TemplateEngineProvider())
 
 	userRepository := repository.UserRepositoryProvider(db)
+	roleRepository := repository.RoleRepositoryProvider(db)
 	tokenBlacklistRepository := repository.TokenBlacklistRepositoryProvider(db)
 	postRepository := repository.PostRepositoryProvider(db)
 	categoryRepository := repository.CategoryRepositoryProvider(db)
@@ -52,6 +54,10 @@ func NewServer() *http.Server {
 
 	categoryService := service.CategoryServiceProvider(
 		categoryRepository, config,
+	)
+
+	roleService := service.RoleServiceProvider(
+		roleRepository, config,
 	)
 
 	// Initialize storage (local or S3 based on config)
@@ -82,6 +88,9 @@ func NewServer() *http.Server {
 		),
 		mediaController: controller.MediaControllerProvider(
 			mediaService,
+		),
+		roleController: controller.RoleControllerProvider(
+			roleService,
 		),
 	}
 

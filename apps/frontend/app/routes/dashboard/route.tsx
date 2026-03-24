@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { requireAuth } from "~/lib/auth-guard.server";
 import { DashboardLayout } from "~/components/layout/dashboard";
 import type { Route } from "./+types/route";
-import { FileText, FolderTree, Home, List, Settings, User, Users } from "lucide-react";
+import { FileText, FolderTree, Home, List, Settings, User, UserCheck, Users } from "lucide-react";
 import * as serverSession from "~/session.server";
 
 /**
@@ -58,7 +58,7 @@ export default function DashboardRoute() {
 
         navigationGroups: [
           {
-            label: "Main",
+            label: "Dashboard",
             collapsible: true,
             items: [
               {
@@ -66,6 +66,12 @@ export default function DashboardRoute() {
                 url: "/dashboard",
                 icon: Home,
               },
+            ],
+          },
+          {
+            label: "Admin",
+            collapsible: true,
+            items: [
               {
                 title: "Media",
                 url: "/dashboard/media",
@@ -76,6 +82,17 @@ export default function DashboardRoute() {
                 url: "/dashboard/users",
                 icon: Users,
               },
+              {
+                title: "Roles",
+                url: "/dashboard/roles",
+                icon: UserCheck,
+              },
+            ],
+          },
+          {
+            label: "Content",
+            collapsible: true,
+            items: [
               {
                 title: "Categories",
                 url: "/dashboard/categories",

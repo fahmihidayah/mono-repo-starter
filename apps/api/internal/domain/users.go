@@ -15,6 +15,8 @@ type User struct {
 	LoginAttempts            int       `gorm:"type:int;default:0" json:"-"`
 	LockUntil                int64     `gorm:"type:bigint;default:0" json:"-"`
 	IsSuperUser              bool      `gorm:"type:boolean;default:false" json:"is_super_user" example:"false"`
+	RoleID					 string	   `gorm:"type:uuid;index" json:"role_id"`
+	Role					 Role	   `gorm:"foreignKey:RoleID" json:"role"`
 	IsVerified               bool      `gorm:"type:boolean;default:false" json:"is_verified" example:"false"`
 	VerificationCode         string    `gorm:"type:varchar(255)" json:"-"`
 	VerificationHash         string    `gorm:"type:varchar(255)" json:"-"`

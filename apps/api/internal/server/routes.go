@@ -41,6 +41,7 @@ func (server *Server) RegisterRoutes() http.Handler {
 		server.postRoute(r)
 		server.mediaRoute(r)
 		server.categoryRoute(r)
+		server.roleRoute(r)
 	})
 
 	return r

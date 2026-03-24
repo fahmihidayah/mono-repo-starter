@@ -1,7 +1,9 @@
 import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import type { Route } from "./+types/_index";
+// import type { Route } from "./+types/_index";
+import type { Route } from "./+types/route";
+import BrandIcons from "./brand-icons";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -40,8 +42,7 @@ export default function Home() {
             Modern Stack
           </div>
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-            Build Something{" "}
-            <span className="text-primary">Amazing</span>
+            Build Something <span className="text-primary">Amazing</span>
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
             A production-ready starter app with authentication, database, and UI components.
@@ -49,14 +50,10 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
             <Button size="lg" asChild>
-              <Link to="/register">
-                Get Started Free
-              </Link>
+              <Link to="/register">Get Started Free</Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <Link to="/dashboard">
-                View Dashboard
-              </Link>
+              <Link to="/dashboard">View Dashboard</Link>
             </Button>
           </div>
         </div>
@@ -141,6 +138,7 @@ export default function Home() {
           </Card>
         </div>
       </section>
+      <BrandIcons />
 
       {/* Footer */}
       <footer className="border-t py-8 mt-20">
